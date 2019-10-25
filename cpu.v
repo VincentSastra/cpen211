@@ -1,5 +1,8 @@
 //some defitions for the FSM for each instruction
-`define waitState 6'b000_000
+`define Reset 6'b000_000 // TODO
+`define IF1 6'b000_001// TODO
+`define IF2 6'b000_002// TODO
+`define UpdatePC 6'b000_003// TODO
 `define instruct1 3'b001
 `define instruct2 3'b010
 `define instruct3 3'b011
@@ -16,19 +19,33 @@
 
 
 
-module cpu(clk, reset, s, load, in, out, N, V, Z, w); //top level module
-	input clk, reset, s, load;
-	input [15:0] in;
-	output [15:0] out;
+module cpu(clk, reset, read_data, mem_cmd, write_data, mem_addr); //top level module
+	input clk, reset, load;
+	input [15:0] read_data; // Instruction in
+	output [15:0] write_data;
+	output [8:0] mem_addr;
+	output [1:0] mem_cmd;
 	output N, V, Z, w;
 	
-	wire [15:0] instr, sximm8, sximm5;
+	wire [15:0] instr, sximm8, sximm5; // instr = instruction that is being operated
+	wire load_ir, load_pc;
+
+	wire [8:0] PCout, DataAddressOut, next_pc;
+	
+	// Instructions for datapath	
 	wire [3:0] vsel;
 	wire [2:0] readnum, writenum, opcode, nsel;
 	wire [1:0] ALUop, shift, op;
 	wire loada, loadb, loadc, loads, write, asel, bsel;
-
-	vDFFE #(16) instruction(clk, load, in, instr); //instruction register
+	
+	vDFFE #(16) instruction(clk, load_ir, read_data, instr); //instruction register
+	
+	mux2 #(9) sel_pc((PCout + 1'b1), {9{1'b0}}, reset_pc);
+	vDFFE #(8) PCvDFF(clk, load_pc, next_pc, PCout);
+	
+	vDFFE #(8) DataAddress(clk, load_addr, datapath_out[8:0], DataAddressOut);
+	
+	mux2 #(9) sel_addr(DataAdressOut, PCout, addr_sel, mem_addr);
 	
 	//OVERVIEW OF BEHAVIOR
 	//if reset == 1 then FSM should go to reset state
@@ -54,9 +71,11 @@ module cpu(clk, reset, s, load, in, out, N, V, Z, w); //top level module
 					  //added for lab 6
 					  mdata, PC, sximm8, sximm5,
 					  // outputs
-					  Z, N, V, out); //accesses editted module from lab5 - does the mathematical operations and read/writes from registers
+					  Z, N, V, write_data); //accesses editted module from lab5 - does the mathematical operations and read/writes from registers
 				 
-	controllerFSM con(clk, s, reset, opcode, op, w, nsel, loada, loadb, loadc, vsel, write, asel, bsel, loads);
+	controllerFSM con(clk, reset, opcode, op, 
+							w, nsel, loada, loadb, loadc, vsel, write, asel, bsel, loads, // Outputs for datapath 
+							load_ir, load_pc);
 	//runs the finite state machine which will control the decoder and the datapath
 endmodule //cpu
 
@@ -113,11 +132,11 @@ module controllerFSM(clk, s, reset, opcode, op, w, nsel, loada, loadb, loadc, vs
 	
 	always @(posedge clk) begin //always block that runs the meat of the FSM (changes states), sensitivty is at rising edge of the clk
 		if (reset) begin //check for reset
-			present_state <= `waitState; //move to reset aka waitState if it is high
+			present_state <= `Reset; //move to reset aka waitState if it is high
 		end //if reset
 	
 	case(present_state)
-		`waitState: if (s) begin //only leave waitState if start is 1
+		`UpdatePC: begin //only leave waitState if start is 1
 			case({opcode,op}) //case to move into the right instruction set
 				5'b11010: present_state <= {`instruct1, `one}; //instruction one moves to regsiter Rd sign extend
 				5'b11000: present_state <= {`instruct2, `one}; //instruction two moves to Rd and shift
@@ -134,26 +153,26 @@ module controllerFSM(clk, s, reset, opcode, op, w, nsel, loada, loadb, loadc, vs
 
 	case(present_state [5:3]) //the following case blocks check the steps within each instruction, as soon as one step is completed (clk is high) then the next step is ready to start. If a step is last for an instruction, it will connect back to waitState
 		`instruct1: case(present_state[2:0])
-							`one: present_state <= `waitState;
+							`one: present_state <= `IF1;
 							default: present_state <= 6'bxxx_xxx;
 						endcase //present_state step
 		`instruct2: case(present_state [2:0]) //also instruction 6
 							`one: present_state[2:0] <= `two;
 							`two: present_state[2:0] <= `three;
-							`three: present_state <= `waitState;
+							`three: present_state <= `IF1;
 							default: present_state[2:0] <= 3'bxxx;
 						endcase 
 		`instruct3: case(present_state [2:0]) //also instruction 5
 							`one: present_state[2:0] <= `two;
 							`two: present_state[2:0] <= `three;
 							`three: present_state[2:0] <= `four;
-							`four: present_state <= `waitState;
+							`four: present_state <= `IF1;
 							default: present_state[2:0] <= 3'bxxx;	
 						endcase 
 		`instruct4: case(present_state [2:0])
 							`one: present_state[2:0] <= `two;
 							`two: present_state[2:0] <= `three;
-							`three: present_state <= `waitState;
+							`three: present_state <= `IF1;
 							default: present_state[2:0] <= 3'bxxx;
 						endcase 
 
@@ -166,7 +185,7 @@ module controllerFSM(clk, s, reset, opcode, op, w, nsel, loada, loadb, loadc, vs
 	always @(*) begin //always block that sets the output for the states of the FSM, runs whenever something changes
 	
 	case(present_state) //last case statement that sets outputs
-	`waitState: begin write <= 1'b0;
+	`Reset: begin write <= 1'b0;
 				nsel <= 3'b000;
 				vsel <= 4'b0000;
 				loada <= 1'b0;
@@ -176,6 +195,36 @@ module controllerFSM(clk, s, reset, opcode, op, w, nsel, loada, loadb, loadc, vs
 				asel <= 1'b0;
 				bsel <= 1'b0;
 					 end
+	`IF1: begin write <= 1'b0;
+				nsel <= 3'b000;
+				vsel <= 4'b0000;
+				loada <= 1'b0;
+				loadb <= 1'b0;
+				loadc <= 1'b0;
+				loads <= 1'b0;
+				asel <= 1'b0;
+				bsel <= 1'b0;
+					 end
+	`IF2: begin write <= 1'b0;
+				nsel <= 3'b000;
+				vsel <= 4'b0000;
+				loada <= 1'b0;
+				loadb <= 1'b0;
+				loadc <= 1'b0;
+				loads <= 1'b0;
+				asel <= 1'b0;
+				bsel <= 1'b0;
+					 end
+	`UpdatePC: begin write <= 1'b0;
+				nsel <= 3'b000;
+				vsel <= 4'b0000;
+				loada <= 1'b0;
+				loadb <= 1'b0;
+				loadc <= 1'b0;
+				loads <= 1'b0;
+				asel <= 1'b0;
+				bsel <= 1'b0;
+					 end					 
 	{`instruct1, `one}: begin 
 								nsel <= 3'b001;
 								vsel <= 4'b0100;
@@ -329,8 +378,6 @@ module controllerFSM(clk, s, reset, opcode, op, w, nsel, loada, loadb, loadc, vs
 	assign w = ( present_state === `waitState ); //controls the wait variable... aka sets w to one whenever we are in the waitState
 	
 endmodule
-
-
 
 
 
