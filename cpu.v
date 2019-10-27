@@ -42,7 +42,7 @@ module cpu(clk, reset, read_data, mem_cmd, write_data, mem_addr); //top level mo
 	
 	vDFFE #(16) instruction(clk, load_ir, read_data, instr); //instruction register
 	
-	next_pc = reset_pc ? 0 : PCout + 1;
+	assign next_pc = reset_pc ? 0 : PCout + 1;
 	vDFFE #(8) PCvDFF(clk, load_pc, next_pc, PCout);
 	
 	vDFFE #(8) DataAddress(clk, load_addr, datapath_out[8:0], DataAddressOut);
