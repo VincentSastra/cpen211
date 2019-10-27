@@ -1,8 +1,8 @@
 //some defitions for the FSM for each instruction
 `define Reset 6'b000_000 // TODO
 `define IF1 6'b000_001// TODO
-`define IF2 6'b000_002// TODO
-`define UpdatePC 6'b000_003// TODO
+`define IF2 6'b000_010// TODO
+`define UpdatePC 6'b000_011// TODO
 `define instruct1 3'b001
 `define instruct2 3'b010
 `define instruct3 3'b011
@@ -17,7 +17,9 @@
 `define four 3'b011
 `define five 3'b100
 
-
+//define mem_cmd
+`define MWRITE 2'b10
+`define MREAD 2'b01
 
 module cpu(clk, reset, read_data, mem_cmd, write_data, mem_addr); //top level module
 	input clk, reset, load;
@@ -40,12 +42,11 @@ module cpu(clk, reset, read_data, mem_cmd, write_data, mem_addr); //top level mo
 	
 	vDFFE #(16) instruction(clk, load_ir, read_data, instr); //instruction register
 	
-	mux2 #(9) sel_pc((PCout + 1'b1), {9{1'b0}}, reset_pc);
+	next_pc = reset_pc ? 0 : PCout + 1;
 	vDFFE #(8) PCvDFF(clk, load_pc, next_pc, PCout);
 	
 	vDFFE #(8) DataAddress(clk, load_addr, datapath_out[8:0], DataAddressOut);
-	
-	mux2 #(9) sel_addr(DataAdressOut, PCout, addr_sel, mem_addr);
+	mux2 #(9) sel_addr(DataAddressOut, PCout, addr_sel, mem_addr);
 	
 	//OVERVIEW OF BEHAVIOR
 	//if reset == 1 then FSM should go to reset state
@@ -75,7 +76,8 @@ module cpu(clk, reset, read_data, mem_cmd, write_data, mem_addr); //top level mo
 				 
 	controllerFSM con(clk, reset, opcode, op, 
 							w, nsel, loada, loadb, loadc, vsel, write, asel, bsel, loads, // Outputs for datapath 
-							load_ir, load_pc);
+							load_ir, load_pc,
+							reset_pc, addr_sel, mem_cmd);
 	//runs the finite state machine which will control the decoder and the datapath
 endmodule //cpu
 
@@ -118,11 +120,12 @@ module mux3(a2, a1, a0, s, b);
 endmodule
 
 
-module controllerFSM(clk, s, reset, opcode, op, w, nsel, loada, loadb, loadc, vsel, write, asel, bsel, loads);
+module controllerFSM(clk, s, reset, opcode, op, w, nsel, loada, loadb, loadc, vsel, write, asel, bsel, loads, load_ir, load_pc, reset_pc, addr_sel, mem_cmd);
 	input clk, s, reset;
 	input [2:0] opcode;
 	input [1:0] op;
-	output reg loada, loadb, loadc, write, asel, bsel, loads;
+	output reg loada, loadb, loadc, write, asel, bsel, loads, reset_pc, addr_sel, load_ir, load_pc;
+	output reg [1:0] mem_cmd;
 	output reg [2:0] nsel;
 	output reg [3:0] vsel;
 	output w;
@@ -152,6 +155,12 @@ module controllerFSM(clk, s, reset, opcode, op, w, nsel, loada, loadb, loadc, vs
 
 
 	case(present_state [5:3]) //the following case blocks check the steps within each instruction, as soon as one step is completed (clk is high) then the next step is ready to start. If a step is last for an instruction, it will connect back to waitState
+		3'b000: case(present_state[2:0])
+						`one: present_state <= `IF1; // if Reset go to IF1
+						`two: present_state <= `IF2; // if IF1 go to IF2
+						`three: present_state <= `UpdatePC; // if IF2 go to UpdatePC
+						default: present_state <= 6'bxxx_xxx;
+					endcase
 		`instruct1: case(present_state[2:0])
 							`one: present_state <= `IF1;
 							default: present_state <= 6'bxxx_xxx;
@@ -185,7 +194,15 @@ module controllerFSM(clk, s, reset, opcode, op, w, nsel, loada, loadb, loadc, vs
 	always @(*) begin //always block that sets the output for the states of the FSM, runs whenever something changes
 	
 	case(present_state) //last case statement that sets outputs
-	`Reset: begin write <= 1'b0;
+	`Reset: begin 
+				reset_pc = 1;
+				load_pc = 1;
+
+				mem_cmd = 0;
+				addr_sel = 0;
+				load_ir = 0;
+
+				write <= 1'b0;
 				nsel <= 3'b000;
 				vsel <= 4'b0000;
 				loada <= 1'b0;
@@ -195,7 +212,15 @@ module controllerFSM(clk, s, reset, opcode, op, w, nsel, loada, loadb, loadc, vs
 				asel <= 1'b0;
 				bsel <= 1'b0;
 					 end
-	`IF1: begin write <= 1'b0;
+	`IF1: begin 
+				reset_pc = 0;
+				load_pc = 0;
+
+				mem_cmd = `MREAD;
+				addr_sel = 1;
+				load_ir = 0;
+				
+				write <= 1'b0;
 				nsel <= 3'b000;
 				vsel <= 4'b0000;
 				loada <= 1'b0;
@@ -205,7 +230,15 @@ module controllerFSM(clk, s, reset, opcode, op, w, nsel, loada, loadb, loadc, vs
 				asel <= 1'b0;
 				bsel <= 1'b0;
 					 end
-	`IF2: begin write <= 1'b0;
+	`IF2: begin 
+				reset_pc = 0;
+				load_pc = 0;
+
+				mem_cmd = `MREAD;
+				addr_sel = 1;
+				load_ir = 1;
+				
+				write <= 1'b0;
 				nsel <= 3'b000;
 				vsel <= 4'b0000;
 				loada <= 1'b0;
@@ -215,7 +248,15 @@ module controllerFSM(clk, s, reset, opcode, op, w, nsel, loada, loadb, loadc, vs
 				asel <= 1'b0;
 				bsel <= 1'b0;
 					 end
-	`UpdatePC: begin write <= 1'b0;
+	`UpdatePC: begin 
+				reset_pc = 0;
+				load_pc = 1;
+
+				mem_cmd = `MREAD;
+				addr_sel = 0;
+				load_ir = 0;
+				
+				write <= 1'b0;
 				nsel <= 3'b000;
 				vsel <= 4'b0000;
 				loada <= 1'b0;
