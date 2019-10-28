@@ -21,11 +21,11 @@ module lab7_top(KEY,SW,LEDR,HEX0,HEX1,HEX2,HEX3,HEX4,HEX5);
 	wire [8:0] mem_addr;
 	wire [15:0] read_data, write_data, dout;
 	
-   	cpu U(clk, reset, read_data, mem_cmd, write_data, mem_addr);
+   	cpu U(clk, reset, read_data, mem_cmd, write_data, mem_addr); //initalizes the top level cpu module
 	
-	// Tri state inverter to read   	
-	wire msel = (`MREAD == mem_cmd) & (mem_addr[8] == 1'b0);
-   	assign read_data = msel ? dout : 16'bzzzz_zzz_zzz_zzz_zzz;
+		// Tri state driver to read   	
+		wire msel = (`MREAD == mem_cmd) & (mem_addr[8] == 1'b0);
+   	assign read_data = msel ? dout : 16'bzzzz_zzz_zzz_zzz_zzz; //driver
 
    	wire write = (`MWRITE == mem_cmd);
    	RAM MEM(clk,mem_addr[7:0],mem_addr[7:0],write, write_data,dout); // TODO idk how to connect write dout din
@@ -38,5 +38,12 @@ module lab7_top(KEY,SW,LEDR,HEX0,HEX1,HEX2,HEX3,HEX4,HEX5);
    	assign read_data[7:0] = load_sw ? SW[7:0] : 8'bzzzzzzzz;
 
    	vDFFE #(8) LED(clk, load_sw, write_data[7:0], LEDR[7:0]);
+		
+		assign HEX0 = 0;
+		assign HEX1 = 0;
+		assign HEX2 = 0;
+		assign HEX3 = 0;
+		assign HEX4 = 0;
+		assign HEX5 = 0;
 
 endmodule
