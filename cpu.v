@@ -20,6 +20,7 @@
 `define four 3'b011
 `define five 3'b100
 `define six 3'b101
+`define seven 3'b110
 
 //define mem_cmd
 `define MWRITE 2'b10
@@ -218,7 +219,8 @@ module controllerFSM(clk, reset, opcode, op, nsel, loada, loadb, loadc, vsel, wr
 							`three: present_state[2:0] <= `four;
 							`four: present_state[2:0] <= `five;
 							`five: present_state[2:0] <= `six;
-							`six: present_state <= `IF1;
+							`six: present_state[2:0] <= `seven;
+							`seven: present_state <= `IF1;
 							default: present_state[2:0] <= 3'bxxx;	
 						endcase
 		`instruct9: case (present_state[2:0])
@@ -700,34 +702,34 @@ module controllerFSM(clk, reset, opcode, op, nsel, loada, loadb, loadc, vsel, wr
 								load_ir = 0;
 								load_addr = 1'b0;
 				
-								nsel <= 3'b100;
-								loadb <= 1'b0;
-								loada <= 1'b0;
-								loads <= 1'b0;
-								asel <= 1'b1;
-								bsel <= 1'b0;
-
-								loadc <= 1'b1;
+								nsel <= 3'b001;
 								write <= 1'b0;
+								loada <= 1'b1;
+								loads<=1'b0;
+
+								loadb <= 1'b0;
+								loadc <= 1'b0;
+								asel <= 1'b0;
+								bsel <= 1'b0;
 								vsel <= 4'b0000;
 								end
 	{`instruct8, `three}: begin  
 								reset_pc = 0;
 								load_pc = 0;
 
-								mem_cmd = `MREAD;
-								addr_sel = 1;
+								mem_cmd = `MNONE;
+								addr_sel = 0;
 								load_ir = 0;
-								load_addr = 1'b1;
+								load_addr = 1'b0;
 				
 								nsel <= 3'b100;
 								loadb <= 1'b0;
 								loada <= 1'b0;
 								loads <= 1'b0;
 								asel <= 1'b0;
-								bsel <= 1'b0;
+								bsel <= 1'b1;
 
-								loadc <= 1'b0;
+								loadc <= 1'b1;
 								write <= 1'b0;
 								vsel <= 4'b0000;
 								end
@@ -738,7 +740,7 @@ module controllerFSM(clk, reset, opcode, op, nsel, loada, loadb, loadc, vsel, wr
 								mem_cmd = `MNONE;
 								addr_sel = 0;
 								load_ir = 0; 
-								load_addr = 1'b0;
+								load_addr = 1'b1;
 				
 								nsel <= 3'b010;
 								write <= 1'b0;
@@ -746,7 +748,7 @@ module controllerFSM(clk, reset, opcode, op, nsel, loada, loadb, loadc, vsel, wr
 								loads<=1'b0;
 
 								loadb <= 1'b1;
-								loadc <= 1'b0;
+								loadc <= 1'b1;
 								asel <= 1'b0;
 								bsel <= 1'b0;
 								vsel <= 4'b0000;
@@ -786,7 +788,27 @@ module controllerFSM(clk, reset, opcode, op, nsel, loada, loadb, loadc, vsel, wr
 								loads<=1'b0;
 
 								loadb <= 1'b0;
-								loadc <= 1'b0;
+								loadc <= 1'b1;
+								asel <= 1'b0;
+								bsel <= 1'b0;
+								vsel <= 4'b0000;
+								end
+		{`instruct8, `seven}: begin  
+								reset_pc = 0;
+								load_pc = 0;
+
+								mem_cmd = `MWRITE;
+								addr_sel = 0;
+								load_ir = 0;
+								load_addr = 1'b0;
+				
+								nsel <= 3'b001;
+								write <= 1'b0;
+								loada <= 1'b0;
+								loads<=1'b0;
+
+								loadb <= 1'b0;
+								loadc <= 1'b1;
 								asel <= 1'b0;
 								bsel <= 1'b0;
 								vsel <= 4'b0000;
