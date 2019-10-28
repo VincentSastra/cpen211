@@ -27,7 +27,7 @@ module lab7_top(KEY,SW,LEDR,HEX0,HEX1,HEX2,HEX3,HEX4,HEX5);
 	
 	// Tri state inverter to read   	
 	wire msel = (`MREAD == mem_cmd) & (mem_addr[8] == 1'b0);
-   	assign read_data = msel ? dout : 15'bzzz_zzz_zzz_zzz_zzz;
+   	assign read_data = msel ? dout : 16'bzzzz_zzz_zzz_zzz_zzz;
 
    	wire write = (`MWRITE == mem_cmd);
    	RAM MEM(clk,mem_addr[7:0],mem_addr[7:0],write, write_data,dout); // TODO idk how to connect write dout din
