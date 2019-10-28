@@ -20,8 +20,6 @@ module lab7_top(KEY,SW,LEDR,HEX0,HEX1,HEX2,HEX3,HEX4,HEX5);
 	wire [1:0] mem_cmd; // bit 0 is read. bit 1 is write
 	wire [8:0] mem_addr;
 	wire [15:0] read_data, write_data, dout;
-	wire clk=~KEY[0];
-	wire reset = ~KEY[1];
 	
    	cpu U(clk, reset, read_data, mem_cmd, write_data, mem_addr);
 	
