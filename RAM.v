@@ -12,7 +12,7 @@ module RAM(clk,read_address,write_address,write,din,dout);
   parameter data_width = 16; 
   parameter addr_width = 8;
   parameter filename = "lab7_tb.txt";
-
+  
   input clk;
   input [addr_width-1:0] read_address, write_address;
   input write;
