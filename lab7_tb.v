@@ -12,4 +12,10 @@ module lab7_tb();
 	#10;
 	end
 	
+	initial begin
+		reset = 1;
+		#30
+		reset =0;
+		#10;
+	end
 endmodule

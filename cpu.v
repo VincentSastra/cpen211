@@ -20,6 +20,7 @@
 //define mem_cmd
 `define MWRITE 2'b10
 `define MREAD 2'b01
+`define MNONE 2'b00
 
 module cpu(clk, reset, read_data, mem_cmd, write_data, mem_addr); //top level module
 	input clk, reset;//, load;
@@ -42,8 +43,8 @@ module cpu(clk, reset, read_data, mem_cmd, write_data, mem_addr); //top level mo
 	
 	vDFFE #(16) instruction(clk, load_ir, read_data, instr); //instruction register
 	
-	assign next_pc = reset_pc ? 8'b0000_0000 : PCout + 1'b1;
-	vDFFE #(8) PCvDFF(clk, load_pc, next_pc, PCout);
+	assign next_pc = reset_pc ? 9'b00000_0000 : PCout + 1'b1;
+	vDFFE #(9) PCvDFF(clk, load_pc, next_pc, PCout);
 	
 	vDFFE #(8) DataAddress(clk, load_addr, write_data[8:0], DataAddressOut);
 	mux2 #(9) sel_addr(DataAddressOut, PCout, addr_sel, mem_addr);
@@ -120,8 +121,8 @@ module mux3(a2, a1, a0, s, b);
 endmodule
 
 
-module controllerFSM(clk, s, reset, opcode, op, w, nsel, loada, loadb, loadc, vsel, write, asel, bsel, loads, load_ir, load_pc, reset_pc, addr_sel, mem_cmd);
-	input clk, s, reset;
+module controllerFSM(clk, reset, opcode, op, w, nsel, loada, loadb, loadc, vsel, write, asel, bsel, loads, load_ir, load_pc, reset_pc, addr_sel, mem_cmd);
+	input clk, reset;
 	input [2:0] opcode;
 	input [1:0] op;
 	output reg loada, loadb, loadc, write, asel, bsel, loads, reset_pc, addr_sel, load_ir, load_pc;
@@ -138,7 +139,7 @@ module controllerFSM(clk, s, reset, opcode, op, w, nsel, loada, loadb, loadc, vs
 			present_state <= `Reset; //move to reset aka waitState if it is high
 		end //if reset
 	
-	case(present_state)
+	/*case(present_state)
 		`UpdatePC: begin //only leave waitState if start is 1
 			case({opcode,op}) //case to move into the right instruction set
 				5'b11010: present_state <= {`instruct1, `one}; //instruction one moves to regsiter Rd sign extend
@@ -152,13 +153,24 @@ module controllerFSM(clk, s, reset, opcode, op, w, nsel, loada, loadb, loadc, vs
 		end
 		//default: present_state <= 6'bxxxxxx;		
 	endcase
-
+*/
 
 	case(present_state [5:3]) //the following case blocks check the steps within each instruction, as soon as one step is completed (clk is high) then the next step is ready to start. If a step is last for an instruction, it will connect back to waitState
 		3'b000: case(present_state[2:0])
 						`one: present_state <= `IF1; // if Reset go to IF1
 						`two: present_state <= `IF2; // if IF1 go to IF2
 						`three: present_state <= `UpdatePC; // if IF2 go to UpdatePC
+						`four: begin
+							case({opcode,op}) //case to move into the right instruction set
+								5'b11010: present_state <= {`instruct1, `one}; //instruction one moves to regsiter Rd sign extend
+								5'b11000: present_state <= {`instruct2, `one}; //instruction two moves to Rd and shift
+								5'b10100: present_state <= {`instruct3, `one}; //instrution 3 Adds Rn to shifted Rm into Rd
+								5'b10101: present_state <= {`instruct4, `one}; //instruction 4 status of Rn - shfited Rm
+								5'b10110: present_state <= {`instruct5, `one}; //instruction 5 Rn anded with shifted Rm
+								5'b10111: present_state <= {`instruct6, `one}; //instruction 6 Rd is shifted negation of Rn
+								default: present_state <= 6'bxxx_xxx;
+							endcase //waitstate
+							end
 						default: present_state <= 6'bxxx_xxx;
 					endcase
 		`instruct1: case(present_state[2:0])
@@ -267,6 +279,13 @@ module controllerFSM(clk, s, reset, opcode, op, w, nsel, loada, loadb, loadc, vs
 				bsel <= 1'b0;
 					 end					 
 	{`instruct1, `one}: begin 
+								reset_pc = 0;
+								load_pc = 0;
+
+								mem_cmd = `MNONE;
+								addr_sel = 0;
+								load_ir = 0;
+				
 								nsel <= 3'b001;
 								vsel <= 4'b0100;
 								write <= 1'b1;
@@ -278,7 +297,14 @@ module controllerFSM(clk, s, reset, opcode, op, w, nsel, loada, loadb, loadc, vs
 								asel <= 1'b0;
 								bsel <= 1'b0;
 								end
-	{`instruct2, `one}: begin 
+	{`instruct2, `one}: begin  
+								reset_pc = 0;
+								load_pc = 0;
+
+								mem_cmd = `MNONE;
+								addr_sel = 0;
+								load_ir = 0;
+				
 								nsel <= 3'b100;
 								write <= 1'b0;
 								asel <= 1'b1;
@@ -291,6 +317,13 @@ module controllerFSM(clk, s, reset, opcode, op, w, nsel, loada, loadb, loadc, vs
 								vsel <= 4'b0000;
 								end
 	{`instruct2, `two}: begin 
+								reset_pc = 0;
+								load_pc = 0;
+
+								mem_cmd = `MNONE;
+								addr_sel = 0;
+								load_ir = 0;
+				 
 								nsel <= 3'b100;
 								write <= 1'b0;
 								asel <= 1'b1;
@@ -302,7 +335,14 @@ module controllerFSM(clk, s, reset, opcode, op, w, nsel, loada, loadb, loadc, vs
 								loada <= 1'b0;
 								vsel <= 4'b0000;
 								end
-	{`instruct2, `three}: begin 
+	{`instruct2, `three}: begin  
+								reset_pc = 0;
+								load_pc = 0;
+
+								mem_cmd = `MNONE;
+								addr_sel = 0;
+								load_ir = 0;
+				
 								nsel <= 3'b010;
 								vsel <= 4'b0001;
 								write <= 1'b1;
@@ -314,7 +354,14 @@ module controllerFSM(clk, s, reset, opcode, op, w, nsel, loada, loadb, loadc, vs
 								asel <= 1'b1;
 								bsel <= 1'b0;
 								end
-	{`instruct3, `one}: begin 
+	{`instruct3, `one}: begin  
+								reset_pc = 0;
+								load_pc = 0;
+
+								mem_cmd = `MNONE;
+								addr_sel = 0;
+								load_ir = 0;
+				
 								nsel <= 3'b001;
 								write <= 1'b0;
 								loada<= 1'b1;
@@ -326,7 +373,14 @@ module controllerFSM(clk, s, reset, opcode, op, w, nsel, loada, loadb, loadc, vs
 								asel <= 1'b0;
 								bsel <= 1'b0;
 								end
-	{`instruct3, `two}: begin 
+	{`instruct3, `two}: begin  
+								reset_pc = 0;
+								load_pc = 0;
+
+								mem_cmd = `MNONE;
+								addr_sel = 0;
+								load_ir = 0;
+				
 								nsel <= 3'b100;
 								asel <= 1'b0;
 								bsel <= 1'b0;
@@ -338,7 +392,14 @@ module controllerFSM(clk, s, reset, opcode, op, w, nsel, loada, loadb, loadc, vs
 								vsel <= 4'b0000;
 								write <= 1'b0;
 								end
-	{`instruct3, `three}: begin 
+	{`instruct3, `three}: begin  
+								reset_pc = 0;
+								load_pc = 0;
+
+								mem_cmd = `MNONE;
+								addr_sel = 0;
+								load_ir = 0;
+				
 								nsel <= 3'b100;
 								asel <= 1'b0;
 								bsel <= 1'b0;
@@ -350,7 +411,14 @@ module controllerFSM(clk, s, reset, opcode, op, w, nsel, loada, loadb, loadc, vs
 								write <= 1'b0;
 								vsel <= 4'b0000;
 								end
-	{`instruct3, `four}: begin 
+	{`instruct3, `four}: begin  
+								reset_pc = 0;
+								load_pc = 0;
+
+								mem_cmd = `MNONE;
+								addr_sel = 0;
+								load_ir = 0;
+				
 								nsel <= 3'b010;
 								vsel <= 4'b0001;
 								write <= 1'b1;
@@ -363,7 +431,14 @@ module controllerFSM(clk, s, reset, opcode, op, w, nsel, loada, loadb, loadc, vs
 								loadb <= 1'b0;
 								loads <= 1'b0;
 								end
-	{`instruct4, `one}: begin 
+	{`instruct4, `one}: begin  
+								reset_pc = 0;
+								load_pc = 0;
+
+								mem_cmd = `MNONE;
+								addr_sel = 0;
+								load_ir = 0;
+				
 								nsel <= 3'b001;
 								write <= 1'b0;
 								loada <= 1'b1;
@@ -375,7 +450,14 @@ module controllerFSM(clk, s, reset, opcode, op, w, nsel, loada, loadb, loadc, vs
 								bsel <= 1'b0;
 								vsel <= 4'b0000;
 								end
-	{`instruct4, `two}: begin 
+	{`instruct4, `two}: begin  
+								reset_pc = 0;
+								load_pc = 0;
+
+								mem_cmd = `MNONE;
+								addr_sel = 0;
+								load_ir = 0;
+				
 								nsel <= 3'b100;
 								loadb <= 1'b1;
 								loada <= 1'b0;
@@ -387,7 +469,14 @@ module controllerFSM(clk, s, reset, opcode, op, w, nsel, loada, loadb, loadc, vs
 								write <= 1'b0;
 								vsel <= 4'b0000;
 								end
-	{`instruct4, `three}: begin 
+	{`instruct4, `three}: begin  
+								reset_pc = 0;
+								load_pc = 0;
+
+								mem_cmd = `MNONE;
+								addr_sel = 0;
+								load_ir = 0;
+				
 								nsel <= 3'b100;
 								loadb <= 1'b1;
 								loada <= 1'b0;
