@@ -13,7 +13,7 @@
 
 module lab7_top (
 	input clk,    // Clock
-	input rst  // Asynchronous reset active low
+	input reset  // Asynchronous reset active low
 );
 
 endmodule
