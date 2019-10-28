@@ -49,12 +49,12 @@ module cpu(clk, reset, read_data, mem_cmd, datapath_out, mem_addr); //top level 
 	
 	vDFFE #(16) instruction(clk, load_ir, read_data, instr); //instruction register
 	
-	assign next_pc = reset_pc ? 9'b00000_0000 : PC + 1'b1;
-	vDFFE #(9) PCvDFF(clk, load_pc, next_pc, PC);
+	assign next_pc = reset_pc ? 9'b00000_0000 : PC + 1'b1; //mux and increment plus one
+	vDFFE #(9) PCvDFF(clk, load_pc, next_pc, PC); //Program counter register
 	
-	vDFFE #(9) DataAddress(clk, load_addr, datapath_out[8:0], DataAddressOut);
+	vDFFE #(9) DataAddress(clk, load_addr, datapath_out[8:0], DataAddressOut); //data address register
 
-	assign mem_addr = addr_sel ? PC : DataAddressOut;	
+	assign mem_addr = addr_sel ? PC : DataAddressOut;	//simple mux
 	//OVERVIEW OF BEHAVIOR
 	//if reset == 1 then FSM should go to reset state
 			//after this FSM should not do anything until s == 1 & poseedge clk
@@ -237,7 +237,7 @@ module controllerFSM(clk, reset, opcode, op, nsel, loada, loadb, loadc, vsel, wr
 	
 	always @(*) begin //always block that sets the output for the states of the FSM, runs whenever something changes
 	
-	case(present_state) //last case statement that sets outputs
+	case(present_state) //last case statement that sets outputs. If an output is unspecified it should be set to 0 to avoid inferred latches
 	`Reset: begin 
 				reset_pc = 1;
 				load_pc = 1;
