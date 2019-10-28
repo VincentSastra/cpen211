@@ -7,7 +7,7 @@ module lab7_tb();
 	
 	reg err;
 
-	lab7_top dut(KEY,SW,LEDR,HEX0,HEX1,HEX2,HEX3,HEX4,HEX5);
+	lab7_top DUT(KEY,SW,LEDR,HEX0,HEX1,HEX2,HEX3,HEX4,HEX5);
 	
 	initial forever begin //clk
 	KEY[0] = 0;
