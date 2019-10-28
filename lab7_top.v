@@ -16,8 +16,6 @@ module lab7_top (
 	input reset  // Asynchronous reset active low
 );
 
-endmodule
-
 	wire [1:0] mem_cmd; // bit 0 is read. bit 1 is write
 	wire [8:0] mem_addr;
 	wire [15:0] read_data, write_data;
