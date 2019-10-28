@@ -8,7 +8,7 @@ module datapath (clk,
 					  //added for lab 6
 					  mdata, PC, sximm8, sximm5,
 					  // outputs
-					  Z, N, V, datapath_out);
+					  datapath_out);
 					  
   input [15:0] mdata, sximm8, sximm5; //datapath_in is disconneted, basically same as data_in
   output [15:0] datapath_out;
@@ -17,9 +17,6 @@ module datapath (clk,
   input [1:0] shift, ALUop;
   input [7:0] PC;
   input [3:0] vsel;
-  wire [2:0] Z_out;
-  wire [2:0] Zal;
-  output Z, N, V;
 
   wire [15:0] data_in, data_out, Aload, Bload, sout, Ain, Bin, out, sximm5;
   
@@ -35,15 +32,9 @@ module datapath (clk,
   
   shifter U1(Bload, shift, sout); //shifts if called for
   
-  ALU U2(Ain,Bin,ALUop,out,Zal); //performs appropriate math operator
+  ALU U2(Ain,Bin,ALUop,out); //performs appropriate math operator
   
   vDFFE #(16) mod5(clk, loadc, out, datapath_out); //register for load c (output)
-  vDFFE #(3) mod10(clk, loads, Zal, Z_out); //status register
-  
-  assign Z = Z_out[0]; //added in lab6 - checks for all 0 answer from status register - all come from alu
-  assign N = Z_out[1]; //checks for negative answer in status register
-  assign V = Z_out[2]; //checks for overflow from status register
-  
 endmodule
 
 
