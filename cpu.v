@@ -171,6 +171,9 @@ module controllerFSM(clk, reset, opcode, op, nsel, loada, loadb, loadc, vsel, wr
 								5'b10101: present_state <= {`instruct4, `one}; //instruction 4 status of Rn - shfited Rm
 								5'b10110: present_state <= {`instruct5, `one}; //instruction 5 Rn anded with shifted Rm
 								5'b10111: present_state <= {`instruct6, `one}; //instruction 6 Rd is shifted negation of Rn
+								5'b01100: present_state <= {`instruct7, `one}; //instruction 6 Rd is shifted negation of Rn
+								5'b10000: present_state <= {`instruct8, `one}; //instruction 6 Rd is shifted negation of Rn
+								5'b11100: present_state <= {`instruct9, `one}; //instruction 6 Rd is shifted negation of Rn
 								default: present_state <= 6'bxxx_xxx;
 							endcase //waitstate
 							end
@@ -216,6 +219,10 @@ module controllerFSM(clk, reset, opcode, op, nsel, loada, loadb, loadc, vsel, wr
 							`five: present_state[2:0] <= `six;
 							`six: present_state[2:0] <= `IF1;
 							default: present_state[2:0] <= 3'bxxx;	
+						endcase
+		`instruct9: case (present_state[2:0])
+							`one: present_state [2:0] <= `one;
+							default: present_state[2:0] <= 3'bxxx;
 						endcase
 
 						
@@ -725,6 +732,26 @@ module controllerFSM(clk, reset, opcode, op, nsel, loada, loadb, loadc, vsel, wr
 								end
 	{`instruct8, `six}: begin  
 								reset_pc = 0;
+								load_pc = 0;
+
+								mem_cmd = `MWRITE;
+								addr_sel = 0;
+								load_ir = 0;
+								load_addr = 1'b0;
+				
+								nsel <= 3'b001;
+								write <= 1'b0;
+								loada <= 1'b0;
+								loads<=1'b0;
+
+								loadb <= 1'b0;
+								loadc <= 1'b0;
+								asel <= 1'b0;
+								bsel <= 1'b0;
+								vsel <= 4'b0000;
+								end
+	{`instruct9, `one}: begin  
+								reset_pc = 1;
 								load_pc = 0;
 
 								mem_cmd = `MWRITE;
