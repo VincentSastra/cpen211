@@ -20,7 +20,11 @@ module datapath (clk,
   wire [2:0] Z_out;
   wire [2:0] Zal;
   output Z, N, V;
-
+ 
+  assign Z = Z_out[0]; //added in lab6 - checks for all 0 answer from status register - all come from alu
+  assign N = Z_out[1]; //checks for negative answer in status register
+  assign V = Z_out[2]; //checks for overflow from status register
+  
   wire [15:0] data_in, data_out, Aload, Bload, sout, Ain, Bin, out, sximm5;
   
   mux4 mod9(datapath_out, {7'b0000000, PC}, sximm8, mdata, vsel, data_in); //largely unused - waiting to be connected in lab7/8
