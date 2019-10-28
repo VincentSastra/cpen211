@@ -50,7 +50,7 @@ module cpu(clk, reset, read_data, mem_cmd, write_data, mem_addr); //top level mo
 	assign next_pc = reset_pc ? 9'b00000_0000 : PCout + 1'b1;
 	vDFFE #(9) PCvDFF(clk, load_pc, next_pc, PCout);
 	
-	vDFFE #(8) DataAddress(clk, load_addr, write_data[8:0], DataAddressOut);
+	vDFFE #(9) DataAddress(clk, load_addr, write_data[8:0], DataAddressOut);
 	mux2 #(9) sel_addr(DataAddressOut, PCout, addr_sel, mem_addr);
 	
 	//OVERVIEW OF BEHAVIOR
@@ -75,9 +75,9 @@ module cpu(clk, reset, read_data, mem_cmd, write_data, mem_addr); //top level mo
 					  // set when writing back to register file
 					  writenum, write,
 					  //added for lab 6
-					  mdata, PC, sximm8, sximm5,
+					  write_data, PCout, sximm8, sximm5,
 					  // outputs
-					  Z, N, V, write_data); //accesses editted module from lab5 - does the mathematical operations and read/writes from registers
+					  write_data); //accesses editted module from lab5 - does the mathematical operations and read/writes from registers
 				 
 	controllerFSM con(clk, reset, opcode, op, 
 							nsel, loada, loadb, loadc, vsel, write, asel, bsel, loads, // Outputs for datapath 
@@ -563,8 +563,8 @@ module controllerFSM(clk, reset, opcode, op, nsel, loada, loadb, loadc, vsel, wr
 								loadb <= 1'b0;
 								loada <= 1'b0;
 								loads <= 1'b0;
-								asel <= 1'b1;
-								bsel <= 1'b0;
+								asel <= 1'b0;
+								bsel <= 1'b1;
 
 								loadc <= 1'b1;
 								write <= 1'b0;
