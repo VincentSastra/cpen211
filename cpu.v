@@ -22,15 +22,15 @@
 `define MREAD 2'b01
 
 module cpu(clk, reset, read_data, mem_cmd, write_data, mem_addr); //top level module
-	input clk, reset, load;
+	input clk, reset;//, load;
 	input [15:0] read_data; // Instruction in
 	output [15:0] write_data;
 	output [8:0] mem_addr;
 	output [1:0] mem_cmd;
-	output N, V, Z, w;
+	//output N, V, Z, w;
 	
 	wire [15:0] instr, sximm8, sximm5; // instr = instruction that is being operated
-	wire load_ir, load_pc;
+	wire load_ir, load_pc, reset_pc;
 
 	wire [8:0] PCout, DataAddressOut, next_pc;
 	
@@ -42,10 +42,10 @@ module cpu(clk, reset, read_data, mem_cmd, write_data, mem_addr); //top level mo
 	
 	vDFFE #(16) instruction(clk, load_ir, read_data, instr); //instruction register
 	
-	assign next_pc = reset_pc ? 0 : PCout + 1;
+	assign next_pc = reset_pc ? 8'b0000_0000 : PCout + 1'b1;
 	vDFFE #(8) PCvDFF(clk, load_pc, next_pc, PCout);
 	
-	vDFFE #(8) DataAddress(clk, load_addr, datapath_out[8:0], DataAddressOut);
+	vDFFE #(8) DataAddress(clk, load_addr, write_data[8:0], DataAddressOut);
 	mux2 #(9) sel_addr(DataAddressOut, PCout, addr_sel, mem_addr);
 	
 	//OVERVIEW OF BEHAVIOR
@@ -416,7 +416,7 @@ module controllerFSM(clk, s, reset, opcode, op, w, nsel, loada, loadb, loadc, vs
 	
 	end
 	
-	assign w = ( present_state === `waitState ); //controls the wait variable... aka sets w to one whenever we are in the waitState
+	//no more w needed assign w = ( present_state === `waitState ); //controls the wait variable... aka sets w to one whenever we are in the waitState
 	
 endmodule
 
