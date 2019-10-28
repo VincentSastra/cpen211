@@ -27,10 +27,10 @@
 `define MREAD 2'b01
 `define MNONE 2'b00
 
-module cpu(clk, reset, read_data, mem_cmd, write_data, mem_addr); //top level module
+module cpu(clk, reset, read_data, mem_cmd, datapath_out, mem_addr); //top level module
 	input clk, reset;//, load;
 	input [15:0] read_data; // Instruction in
-	output [15:0] write_data;
+	output [15:0] datapath_out;
 	output [8:0] mem_addr;
 	output [1:0] mem_cmd;
 	//output N, V, Z, w;
@@ -51,7 +51,7 @@ module cpu(clk, reset, read_data, mem_cmd, write_data, mem_addr); //top level mo
 	assign next_pc = reset_pc ? 9'b00000_0000 : PCout + 1'b1;
 	vDFFE #(9) PCvDFF(clk, load_pc, next_pc, PCout);
 	
-	vDFFE #(9) DataAddress(clk, load_addr, write_data[8:0], DataAddressOut);
+	vDFFE #(9) DataAddress(clk, load_addr, datapath_out[8:0], DataAddressOut);
 
 	assign mem_addr = addr_sel ? PCout : DataAddressOut;	
 	//OVERVIEW OF BEHAVIOR
@@ -78,7 +78,7 @@ module cpu(clk, reset, read_data, mem_cmd, write_data, mem_addr); //top level mo
 					  //added for lab 6
 					  read_data, PCout, sximm8, sximm5,
 					  // outputs
-					  write_data); //accesses editted module from lab5 - does the mathematical operations and read/writes from registers
+					  Z, N, V, datapath_out); //accesses editted module from lab5 - does the mathematical operations and read/writes from registers
 				 
 	controllerFSM con(clk, reset, opcode, op, 
 							nsel, loada, loadb, loadc, vsel, write, asel, bsel, loads, // Outputs for datapath 
