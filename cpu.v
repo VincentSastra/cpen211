@@ -75,9 +75,9 @@ module cpu(clk, reset, read_data, mem_cmd, write_data, mem_addr); //top level mo
 					  // set when writing back to register file
 					  writenum, write,
 					  //added for lab 6
-					  mdata, PC, sximm8, sximm5,
+					  read_data, PC, sximm8, sximm5,
 					  // outputs
-					  Z, N, V, write_data); //accesses editted module from lab5 - does the mathematical operations and read/writes from registers
+					  write_data); //accesses editted module from lab5 - does the mathematical operations and read/writes from registers
 				 
 	controllerFSM con(clk, reset, opcode, op, 
 							nsel, loada, loadb, loadc, vsel, write, asel, bsel, loads, // Outputs for datapath 
@@ -171,9 +171,9 @@ module controllerFSM(clk, reset, opcode, op, nsel, loada, loadb, loadc, vsel, wr
 								5'b10101: present_state <= {`instruct4, `one}; //instruction 4 status of Rn - shfited Rm
 								5'b10110: present_state <= {`instruct5, `one}; //instruction 5 Rn anded with shifted Rm
 								5'b10111: present_state <= {`instruct6, `one}; //instruction 6 Rd is shifted negation of Rn
-								5'b01100: present_state <= {`instruct7, `one}; //instruction 6 Rd is shifted negation of Rn
-								5'b10000: present_state <= {`instruct8, `one}; //instruction 6 Rd is shifted negation of Rn
-								5'b11100: present_state <= {`instruct9, `one}; //instruction 6 Rd is shifted negation of Rn
+								5'b01100: present_state <= {`instruct7, `one}; //instruction 7 load
+								5'b10000: present_state <= {`instruct8, `one}; //instruction 8 store
+								5'b11100: present_state <= {`instruct9, `one}; //instruction 9 Inifinite halt loop - resets pc 
 								default: present_state <= 6'bxxx_xxx;
 							endcase //waitstate
 							end
@@ -207,7 +207,8 @@ module controllerFSM(clk, reset, opcode, op, nsel, loada, loadb, loadc, vsel, wr
 							`two: present_state[2:0] <= `three;
 							`three: present_state[2:0] <= `four;
 							`four: present_state[2:0] <= `five;
-							`five: present_state[2:0] <= `IF1;
+							`five: present_state[2:0] <= `six;
+							`six: present_state <= `IF1;
 							default: present_state[2:0] <= 3'bxxx;	
 						endcase
 		
@@ -217,7 +218,7 @@ module controllerFSM(clk, reset, opcode, op, nsel, loada, loadb, loadc, vsel, wr
 							`three: present_state[2:0] <= `four;
 							`four: present_state[2:0] <= `five;
 							`five: present_state[2:0] <= `six;
-							`six: present_state[2:0] <= `IF1;
+							`six: present_state <= `IF1;
 							default: present_state[2:0] <= 3'bxxx;	
 						endcase
 		`instruct9: case (present_state[2:0])
@@ -559,6 +560,26 @@ module controllerFSM(clk, reset, opcode, op, nsel, loada, loadb, loadc, vsel, wr
 								load_ir = 0;
 								load_addr = 1'b0;
 				
+								nsel <= 3'b001;
+								write <= 1'b0;
+								loada <= 1'b1;
+								loads<=1'b0;
+
+								loadb <= 1'b0;
+								loadc <= 1'b0;
+								asel <= 1'b0;
+								bsel <= 1'b0;
+								vsel <= 4'b0000;
+								end
+	{`instruct7, `three}: begin  
+								reset_pc = 0;
+								load_pc = 0;
+
+								mem_cmd = `MNONE;
+								addr_sel = 0;
+								load_ir = 0;
+								load_addr = 1'b0;
+				
 								nsel <= 3'b100;
 								loadb <= 1'b0;
 								loada <= 1'b0;
@@ -570,7 +591,7 @@ module controllerFSM(clk, reset, opcode, op, nsel, loada, loadb, loadc, vsel, wr
 								write <= 1'b0;
 								vsel <= 4'b0000;
 								end
-	{`instruct7, `three}: begin  
+	{`instruct7, `four}: begin  
 								reset_pc = 0;
 								load_pc = 0;
 
@@ -590,7 +611,7 @@ module controllerFSM(clk, reset, opcode, op, nsel, loada, loadb, loadc, vsel, wr
 								write <= 1'b0;
 								vsel <= 4'b0000;
 								end
-	{`instruct7, `four}: begin //buffer state 
+	{`instruct7, `five}: begin //buffer state 
 								reset_pc = 0;
 								load_pc = 0;
 
@@ -610,7 +631,7 @@ module controllerFSM(clk, reset, opcode, op, nsel, loada, loadb, loadc, vsel, wr
 								write <= 1'b0;
 								vsel <= 4'b0000;
 								end
-	{`instruct7, `five}: begin  
+	{`instruct7, `six}: begin  
 								reset_pc = 0;
 								load_pc = 0;
 
