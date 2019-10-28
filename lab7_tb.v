@@ -1,7 +1,7 @@
 module lab7_tb();
 	
 	reg [3:0]KEY;
-	reg [9:0] SW
+	reg [9:0] SW;
 	wire [9:0] LEDR;
 	wire [6:0] HEX0,HEX1,HEX2,HEX3,HEX4,HEX5;
 	
