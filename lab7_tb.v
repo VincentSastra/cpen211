@@ -49,15 +49,15 @@ module lab7_tb();
     @(posedge DUT.CPU.PC or negedge DUT.CPU.PC);  // wait here until PC changes; autograder expects PC set to 5 *after* executing STR R1, [R2]
    
     if (DUT.CPU.PC !== 9'h5) begin err = 1; $display("FAILED: PC should be 5."); $stop; end
-    if (DUT.CPU.REGFILE.R4 !== 16'b1001011110111100) begin err = 1; $display("FAILED: mem[6] wrong; looks like your STR isn't working"); $stop; end
+    if (DUT.CPU.DP.REGFILE.R4 !== 16'b1001011110111100) begin err = 1; $display("FAILED: mem[6] wrong; looks like your STR isn't working"); $stop; end
     
     @(posedge DUT.CPU.PC or negedge DUT.CPU.PC);  // wait here until PC changes; autograder expects PC set to 4 *after* executing MOV R2, Y
 
-    if (DUT.CPU.REGFILE.R5 !== ~(16'b1001011110111100)) begin err = 1; $display("FAILED: R2 should be 6."); $stop; end
+    if (DUT.CPU.DP.REGFILE.R5 !== ~(16'b1001011110111100)) begin err = 1; $display("FAILED: R2 should be 6."); $stop; end
 
     @(posedge DUT.CPU.PC or negedge DUT.CPU.PC);  // wait here until PC changes; autograder expects PC set to 4 *after* executing MOV R2, Y
 
-    if (DUT.CPU.REGFILE.R6 !== 4'h0000) begin err = 1; $display("FAILED: R2 should be 6."); $stop; end
+    if (DUT.CPU.DP.REGFILE.R6 !== 4'h0000) begin err = 1; $display("FAILED: R2 should be 6."); $stop; end
 
     $stop;
 
