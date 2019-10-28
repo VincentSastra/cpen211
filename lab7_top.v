@@ -33,7 +33,7 @@ module lab7_top(KEY,SW,LEDR,HEX0,HEX1,HEX2,HEX3,HEX4,HEX5);
 
 
    	assign load_led = (mem_cmd == `MWRITE) & (mem_addr == `LEDADDR); //how is load_led connected to the actual leds?
-   	assign load_sw = (mem_cmd == `MREAD) & (mem_addr == `LEDADDR);
+   	assign load_sw = (mem_cmd == `MREAD) & (mem_addr == `SWADDR);
 
    	assign read_data[15:8] = load_sw ? 8'b00000000 : 8'bzzzzzzzz;
    	assign read_data[7:0] = load_sw ? SW[7:0] : 8'bzzzzzzzz;
@@ -46,5 +46,6 @@ module lab7_top(KEY,SW,LEDR,HEX0,HEX1,HEX2,HEX3,HEX4,HEX5);
 		assign HEX3 = 7'b1111_111;
 		assign HEX4 = 7'b1111_111;
 		assign HEX5 = 7'b1111_111;
+		assign LEDR [9:8] = 2'b00;
 
 endmodule
