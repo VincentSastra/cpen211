@@ -24,7 +24,7 @@ module lab7_top (
    	cpu U(clk, reset, read_data, mem_cmd, write_data, mem_addr);
 	
 	// Tri state inverter to read   	
-	wire msel = (`MREAD == mem_cmd) && (mem_addr[8] == 1'b0);
+	wire msel = (`MREAD == mem_cmd) & (mem_addr[8] == 1'b0);
    	assign read_data = msel ? dout : 15'bzzz_zzz_zzz_zzz_zzz;
 
    	wire write = (`MWRITE == mem_cmd);
