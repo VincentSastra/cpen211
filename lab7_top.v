@@ -21,7 +21,7 @@ module lab7_top(KEY,SW,LEDR,HEX0,HEX1,HEX2,HEX3,HEX4,HEX5);
 	wire [8:0] mem_addr;
 	wire [15:0] read_data, write_data, dout;
 	
-   	cpu U(clk, reset, read_data, mem_cmd, write_data, mem_addr); //initalizes the top level cpu module
+   	cpu CPU(clk, reset, read_data, mem_cmd, write_data, mem_addr); //initalizes the top level cpu module
 	
 		// Tri state driver to read   	
 		wire msel = (`MREAD == mem_cmd) & (mem_addr[8] == 1'b0);
@@ -39,11 +39,11 @@ module lab7_top(KEY,SW,LEDR,HEX0,HEX1,HEX2,HEX3,HEX4,HEX5);
 
    	vDFFE #(8) LED(clk, load_sw, write_data[7:0], LEDR[7:0]);
 		
-		assign HEX0 = 0;
-		assign HEX1 = 0;
-		assign HEX2 = 0;
-		assign HEX3 = 0;
-		assign HEX4 = 0;
-		assign HEX5 = 0;
+		assign HEX0 = 7'b1111_111;
+		assign HEX1 = 7'b1111_111;
+		assign HEX2 = 7'b1111_111;
+		assign HEX3 = 7'b1111_111;
+		assign HEX4 = 7'b1111_111;
+		assign HEX5 = 7'b1111_111;
 
 endmodule

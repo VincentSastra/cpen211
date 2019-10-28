@@ -15,7 +15,7 @@ module datapath (clk,
   input write, loada, loadb, asel, bsel, loadc, loads, clk;
   input [2:0] readnum, writenum;
   input [1:0] shift, ALUop;
-  input [7:0] PC;
+  input [8:0] PC;
   input [3:0] vsel;
   wire [2:0] Z_out;
   wire [2:0] Zal;
@@ -23,7 +23,7 @@ module datapath (clk,
 
   wire [15:0] data_in, data_out, Aload, Bload, sout, Ain, Bin, out, sximm5;
   
-  mux4 mod9(datapath_out, {8'b00000000, PC}, sximm8, mdata, vsel, data_in); //largely unused - waiting to be connected in lab7/8
+  mux4 mod9(datapath_out, {7'b0000000, PC}, sximm8, mdata, vsel, data_in); //largely unused - waiting to be connected in lab7/8
   
   regfile REGFILE(data_in, writenum, write, readnum, clk, data_out); //register file - does all the read/writing
   
@@ -35,7 +35,7 @@ module datapath (clk,
   
   shifter U1(Bload, shift, sout); //shifts if called for
   
-  ALU U2(Ain,Bin,ALUop,out); //performs appropriate math operator
+  ALU U2(Ain,Bin,ALUop,out, Zal); //performs appropriate math operator
   
   vDFFE #(16) mod5(clk, loadc, out, datapath_out); //register for load c (output)
   vDFFE #(3) mod10(clk, loads, Zal, Z_out); //status register

@@ -21,6 +21,7 @@
 `define five 3'b100
 `define six 3'b101
 `define seven 3'b110
+`define eight 3'b111
 
 //define mem_cmd
 `define MWRITE 2'b10
@@ -38,7 +39,7 @@ module cpu(clk, reset, read_data, mem_cmd, datapath_out, mem_addr); //top level 
 	wire [15:0] instr, sximm8, sximm5; // instr = instruction that is being operated
 	wire load_ir, load_pc, reset_pc, addr_sel;
 
-	wire [8:0] PCout, DataAddressOut, next_pc;
+	wire [8:0] PC, DataAddressOut, next_pc;
 	
 	// Instructions for datapath	
 	wire [3:0] vsel;
@@ -48,12 +49,12 @@ module cpu(clk, reset, read_data, mem_cmd, datapath_out, mem_addr); //top level 
 	
 	vDFFE #(16) instruction(clk, load_ir, read_data, instr); //instruction register
 	
-	assign next_pc = reset_pc ? 9'b00000_0000 : PCout + 1'b1;
-	vDFFE #(9) PCvDFF(clk, load_pc, next_pc, PCout);
+	assign next_pc = reset_pc ? 9'b00000_0000 : PC + 1'b1;
+	vDFFE #(9) PCvDFF(clk, load_pc, next_pc, PC);
 	
 	vDFFE #(9) DataAddress(clk, load_addr, datapath_out[8:0], DataAddressOut);
 
-	assign mem_addr = addr_sel ? PCout : DataAddressOut;	
+	assign mem_addr = addr_sel ? PC : DataAddressOut;	
 	//OVERVIEW OF BEHAVIOR
 	//if reset == 1 then FSM should go to reset state
 			//after this FSM should not do anything until s == 1 & poseedge clk
@@ -76,7 +77,7 @@ module cpu(clk, reset, read_data, mem_cmd, datapath_out, mem_addr); //top level 
 					  // set when writing back to register file
 					  writenum, write,
 					  //added for lab 6
-					  read_data, PCout, sximm8, sximm5,
+					  read_data, PC, sximm8, sximm5,
 					  // outputs
 					  Z, N, V, datapath_out); //accesses editted module from lab5 - does the mathematical operations and read/writes from registers
 				 
@@ -220,7 +221,8 @@ module controllerFSM(clk, reset, opcode, op, nsel, loada, loadb, loadc, vsel, wr
 							`four: present_state[2:0] <= `five;
 							`five: present_state[2:0] <= `six;
 							`six: present_state[2:0] <= `seven;
-							`seven: present_state <= `IF1;
+							`seven: present_state[2:0] <= `eight;
+							`eight: present_state <= `IF1;
 							default: present_state[2:0] <= 3'bxxx;	
 						endcase
 		`instruct9: case (present_state[2:0])
@@ -789,7 +791,7 @@ module controllerFSM(clk, reset, opcode, op, nsel, loada, loadb, loadc, vsel, wr
 
 								loadb <= 1'b0;
 								loadc <= 1'b1;
-								asel <= 1'b0;
+								asel <= 1'b1;
 								bsel <= 1'b0;
 								vsel <= 4'b0000;
 								end
@@ -809,7 +811,27 @@ module controllerFSM(clk, reset, opcode, op, nsel, loada, loadb, loadc, vsel, wr
 
 								loadb <= 1'b0;
 								loadc <= 1'b1;
-								asel <= 1'b0;
+								asel <= 1'b1;
+								bsel <= 1'b0;
+								vsel <= 4'b0000;
+								end
+	{`instruct8, `eight}: begin  
+								reset_pc = 0;
+								load_pc = 0;
+
+								mem_cmd = `MWRITE;
+								addr_sel = 0;
+								load_ir = 0;
+								load_addr = 1'b0;
+				
+								nsel <= 3'b001;
+								write <= 1'b0;
+								loada <= 1'b0;
+								loads<=1'b0;
+
+								loadb <= 1'b0;
+								loadc <= 1'b1;
+								asel <= 1'b1;
 								bsel <= 1'b0;
 								vsel <= 4'b0000;
 								end
@@ -829,7 +851,7 @@ module controllerFSM(clk, reset, opcode, op, nsel, loada, loadb, loadc, vsel, wr
 
 								loadb <= 1'b0;
 								loadc <= 1'b0;
-								asel <= 1'b0;
+								asel <= 1'b1;
 								bsel <= 1'b0;
 								vsel <= 4'b0000;
 								end
