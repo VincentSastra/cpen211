@@ -39,9 +39,10 @@ endmodule
 
 //MUX with 2 16-bit inputs and one-hot select
 module mux2(a0, a1, s, b);
-	input [15:0] a0, a1;
+	parameter n=16;
+	input [n-1:0] a0, a1;
 	input s;
-	output [15:0] b;
+	output [n-1:0] b;
 		
 	assign b = s ? a1 : a0; //MUX logic, value s is concactinated 16 times to match bit size of inputs
 	
