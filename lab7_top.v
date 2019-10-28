@@ -14,6 +14,8 @@ module lab7_top(KEY,SW,LEDR,HEX0,HEX1,HEX2,HEX3,HEX4,HEX5);
 	output[9:0] LEDR;
 	output[6:0] HEX0, HEX1, HEX2, HEX3, HEX4, HEX5;
 
+	wire clk = ~KEY[0];
+	wire reset = ~KEY[1];
 	wire load_led, load_sw;
 	wire [1:0] mem_cmd; // bit 0 is read. bit 1 is write
 	wire [8:0] mem_addr;
