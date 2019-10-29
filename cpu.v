@@ -1,8 +1,8 @@
 //some defitions for the FSM for each instruction
-`define Reset 6'b000_000 // TODO
-`define IF1 6'b000_001// TODO
-`define IF2 6'b000_010// TODO
-`define UpdatePC 6'b000_011// TODO
+`define Reset 6'b000_000
+`define IF1 6'b000_001// COULD BE MODIFIED AS THE FINAL BUFFER STEP FOR MOST STUFF
+`define IF2 6'b000_010
+`define UpdatePC 6'b000_011
 `define instruct1 3'b001
 `define instruct2 3'b010
 `define instruct3 3'b011
@@ -209,8 +209,7 @@ module controllerFSM(clk, reset, opcode, op, nsel, loada, loadb, loadc, vsel, wr
 							`two: present_state[2:0] <= `three;
 							`three: present_state[2:0] <= `four;
 							`four: present_state[2:0] <= `five;
-							`five: present_state[2:0] <= `six;
-							`six: present_state <= `IF1;
+							`five: present_state <= `IF1;
 							default: present_state[2:0] <= 3'bxxx;	
 						endcase
 		
@@ -220,9 +219,7 @@ module controllerFSM(clk, reset, opcode, op, nsel, loada, loadb, loadc, vsel, wr
 							`three: present_state[2:0] <= `four;
 							`four: present_state[2:0] <= `five;
 							`five: present_state[2:0] <= `six;
-							`six: present_state[2:0] <= `seven;
-							`seven: present_state[2:0] <= `eight;
-							`eight: present_state <= `IF1;
+							`six: present_state <= `IF1;
 							default: present_state[2:0] <= 3'bxxx;	
 						endcase
 		`instruct9: case (present_state[2:0])
@@ -564,26 +561,6 @@ module controllerFSM(clk, reset, opcode, op, nsel, loada, loadb, loadc, vsel, wr
 								load_ir = 0;
 								load_addr = 1'b0;
 				
-								nsel <= 3'b001;
-								write <= 1'b0;
-								loada <= 1'b1;
-								loads<=1'b0;
-
-								loadb <= 1'b0;
-								loadc <= 1'b0;
-								asel <= 1'b0;
-								bsel <= 1'b0;
-								vsel <= 4'b0000;
-								end
-	{`instruct7, `three}: begin  
-								reset_pc = 0;
-								load_pc = 0;
-
-								mem_cmd = `MNONE;
-								addr_sel = 0;
-								load_ir = 0;
-								load_addr = 1'b0;
-				
 								nsel <= 3'b100;
 								loadb <= 1'b0;
 								loada <= 1'b0;
@@ -595,7 +572,7 @@ module controllerFSM(clk, reset, opcode, op, nsel, loada, loadb, loadc, vsel, wr
 								write <= 1'b0;
 								vsel <= 4'b0000;
 								end
-	{`instruct7, `four}: begin  
+	{`instruct7, `three}: begin  
 								reset_pc = 0;
 								load_pc = 0;
 
@@ -615,7 +592,7 @@ module controllerFSM(clk, reset, opcode, op, nsel, loada, loadb, loadc, vsel, wr
 								write <= 1'b0;
 								vsel <= 4'b0000;
 								end
-	{`instruct7, `five}: begin //buffer state 
+	{`instruct7, `four}: begin //buffer state 
 								reset_pc = 0;
 								load_pc = 0;
 
@@ -635,7 +612,7 @@ module controllerFSM(clk, reset, opcode, op, nsel, loada, loadb, loadc, vsel, wr
 								write <= 1'b0;
 								vsel <= 4'b0000;
 								end
-	{`instruct7, `six}: begin  
+	{`instruct7, `five}: begin  
 								reset_pc = 0;
 								load_pc = 0;
 
@@ -654,27 +631,7 @@ module controllerFSM(clk, reset, opcode, op, nsel, loada, loadb, loadc, vsel, wr
 								loadc <= 1'b0;
 								write <= 1'b1;
 								vsel <= 4'b1000;
-								end
-	{`instruct7, `six}: begin  
-								reset_pc = 0;
-								load_pc = 0;
-
-								mem_cmd = `MNONE;
-								addr_sel = 0;
-								load_ir = 0;
-								load_addr = 1'b0;
-				
-								nsel <= 3'b010;
-								loadb <= 1'b0;
-								loada <= 1'b0;
-								loads <= 1'b0;
-								asel <= 1'b0;
-								bsel <= 1'b0;
-
-								loadc <= 1'b0;
-								write <= 1'b1;
-								vsel <= 4'b1000;
-								end								
+								end 					
 	{`instruct8, `one}: begin  
 								reset_pc = 0;
 								load_pc = 0;
@@ -704,26 +661,6 @@ module controllerFSM(clk, reset, opcode, op, nsel, loada, loadb, loadc, vsel, wr
 								load_ir = 0;
 								load_addr = 1'b0;
 				
-								nsel <= 3'b001;
-								write <= 1'b0;
-								loada <= 1'b1;
-								loads<=1'b0;
-
-								loadb <= 1'b0;
-								loadc <= 1'b0;
-								asel <= 1'b0;
-								bsel <= 1'b0;
-								vsel <= 4'b0000;
-								end
-	{`instruct8, `three}: begin  
-								reset_pc = 0;
-								load_pc = 0;
-
-								mem_cmd = `MNONE;
-								addr_sel = 0;
-								load_ir = 0;
-								load_addr = 1'b0;
-				
 								nsel <= 3'b100;
 								loadb <= 1'b0;
 								loada <= 1'b0;
@@ -735,27 +672,27 @@ module controllerFSM(clk, reset, opcode, op, nsel, loada, loadb, loadc, vsel, wr
 								write <= 1'b0;
 								vsel <= 4'b0000;
 								end
-	{`instruct8, `four}: begin  
+	{`instruct8, `three}: begin  
 								reset_pc = 0;
 								load_pc = 0;
 
-								mem_cmd = `MNONE;
+								mem_cmd = `MREAD;
 								addr_sel = 0;
-								load_ir = 0; 
+								load_ir = 0;
 								load_addr = 1'b1;
 				
 								nsel <= 3'b010;
-								write <= 1'b0;
-								loada <= 1'b0;
-								loads<=1'b0;
-
 								loadb <= 1'b1;
-								loadc <= 1'b1;
+								loada <= 1'b0;
+								loads <= 1'b0;
 								asel <= 1'b0;
 								bsel <= 1'b0;
+
+								loadc <= 1'b0;
+								write <= 1'b0;
 								vsel <= 4'b0000;
 								end
-	{`instruct8, `five}: begin  
+	{`instruct8, `four}: begin  
 								reset_pc = 0;
 								load_pc = 0;
 
@@ -773,6 +710,26 @@ module controllerFSM(clk, reset, opcode, op, nsel, loada, loadb, loadc, vsel, wr
 								loadc <= 1'b1;
 								asel <= 1'b0;
 								bsel <= 1'b1;
+								vsel <= 4'b0000;
+								end
+	{`instruct8, `five}: begin  
+								reset_pc = 0;
+								load_pc = 0;
+
+								mem_cmd = `MWRITE;
+								addr_sel = 0;
+								load_ir = 0;
+								load_addr = 1'b0;
+				
+								nsel <= 3'b001;
+								write <= 1'b0;
+								loada <= 1'b0;
+								loads<=1'b0;
+
+								loadb <= 1'b0;
+								loadc <= 1'b1;
+								asel <= 1'b1;
+								bsel <= 1'b0;
 								vsel <= 4'b0000;
 								end
 	{`instruct8, `six}: begin  
@@ -794,47 +751,7 @@ module controllerFSM(clk, reset, opcode, op, nsel, loada, loadb, loadc, vsel, wr
 								asel <= 1'b1;
 								bsel <= 1'b0;
 								vsel <= 4'b0000;
-								end
-		{`instruct8, `seven}: begin  
-								reset_pc = 0;
-								load_pc = 0;
-
-								mem_cmd = `MWRITE;
-								addr_sel = 0;
-								load_ir = 0;
-								load_addr = 1'b0;
-				
-								nsel <= 3'b001;
-								write <= 1'b0;
-								loada <= 1'b0;
-								loads<=1'b0;
-
-								loadb <= 1'b0;
-								loadc <= 1'b1;
-								asel <= 1'b1;
-								bsel <= 1'b0;
-								vsel <= 4'b0000;
-								end
-	{`instruct8, `eight}: begin  
-								reset_pc = 0;
-								load_pc = 0;
-
-								mem_cmd = `MWRITE;
-								addr_sel = 0;
-								load_ir = 0;
-								load_addr = 1'b0;
-				
-								nsel <= 3'b001;
-								write <= 1'b0;
-								loada <= 1'b0;
-								loads<=1'b0;
-
-								loadb <= 1'b0;
-								loadc <= 1'b1;
-								asel <= 1'b1;
-								bsel <= 1'b0;
-								vsel <= 4'b0000;
-								end
+								end								
 	{`instruct9, `one}: begin  
 								reset_pc = 1;
 								load_pc = 1;

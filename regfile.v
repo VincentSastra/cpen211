@@ -86,7 +86,7 @@ module decoder38a(a, b);
 	input [2:0] a;
 	output [7:0] b;
 	
-	wire [7:0] b = 1 << a; //why is wire used instead of assign. Ss6 #8
+	assign b = 1 << a; //why is wire used instead of assign. Ss6 #8
 	
 endmodule
 
