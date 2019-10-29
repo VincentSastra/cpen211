@@ -1,0 +1,31 @@
+Vincent and Leah worked on this lab individually to start, but pair programmed and debugged most of lab6 together.
+
+Vincent work individually on Friday, October 25 from 4 pm to 6 pm in the MacLeod buildingd
+We worked together on Sunday, October 27th from 3 pm to 1 am in the MacLeod building.
+We worked together individually on Monday October 28th to finish the project 
+
+All of the code in lab6 is either our own, provided to us via the source files on piazza, or from the slides/textbook.
+In other words, we did not use someone else's lab5.
+
+The following is a breakdown of the submitted code:
+
+Some edits were made to all lab5 files by both lab partners.
+
+lab_top.v was updated by Vincent
+
+cpu.v was updated by Leah
+
+lab7_tb was made by Vincent
+
+RAM was copied from slideset 7
+
+Debugging:
+The bulk of time on this lab was spent debugging. The following were SOME of the bugs we encountered and how we fixed them:
+-There wasn't enough cycles for STR and LDR to load correctly, we discovered it after making some
+buffer state to check.
+
+-The switches and LED aren't connected because we accidently flipped the variables when writing the constant
+
+-Most of the bugs occurs when writing over the old code because sometimes we forget to change the 
+variables when we needed to change. So a lot of the time is spent following the signal changes
+in modelsim until we see where its diconnected or passing the wrong values
