@@ -1,2 +1,5 @@
-# cpen211
-For all the labs in cpen211
+# IMPORTANT TODO
+
+Finished PC implementation
+
+Fix all the states to consider the new PC implementation
