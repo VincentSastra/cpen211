@@ -837,7 +837,7 @@ module controllerFSM(clk, reset, opcode, op, nsel, loada, loadb, loadc, vsel, wr
 								end
 	{`instruct9, `one}: begin  
 								reset_pc = 1;
-								load_pc = 0;
+								load_pc = 1;
 
 								mem_cmd = `MNONE;
 								addr_sel = 0;
@@ -851,7 +851,7 @@ module controllerFSM(clk, reset, opcode, op, nsel, loada, loadb, loadc, vsel, wr
 
 								loadb <= 1'b0;
 								loadc <= 1'b0;
-								asel <= 1'b1;
+								asel <= 1'b0;
 								bsel <= 1'b0;
 								vsel <= 4'b0000;
 								end
