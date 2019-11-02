@@ -25,10 +25,10 @@ module lab7_top(KEY,SW,LEDR,HEX0,HEX1,HEX2,HEX3,HEX4,HEX5);
    	cpu CPU(clk, reset, read_data, mem_cmd, write_data, mem_addr); //initalizes the top level cpu module
 	
 		// Tri state driver to read   	
-		wire msel = (`MREAD == mem_cmd) & (mem_addr[8] == 1'b0);
+	wire msel = (`MREAD == mem_cmd) & (mem_addr[8] == 1'b0);
    	assign read_data = msel ? dout : 16'bzzzz_zzz_zzz_zzz_zzz; //tri-state driver
 
-   	wire write = (`MWRITE == mem_cmd);
+   	wire write = (`MWRITE == mem_cmd) & (mem_addr[8] == 1'b0);
    	RAM MEM(clk,mem_addr[7:0],mem_addr[7:0],write, write_data, dout); // instaniates the RAM component, notice mem_addr[7:0] is both read address and write address
 
    	assign load_led = (mem_cmd == `MWRITE) & (mem_addr == `LEDADDR); //"your combinational logic circuit" block for leds
