@@ -8,10 +8,10 @@ module datapath (clk,
 					  //added for lab 6
 					  mdata, PC, sximm8, sximm5,
 					  // outputs
-					  Z, N, V, datapath_out);
+					  Z, N, V, datapath_out, data_out);
 					  
   input [15:0] mdata, sximm8, sximm5; //datapath_in is disconneted, basically same as data_in
-  output [15:0] datapath_out;
+  output [15:0] datapath_out, data_out;
   input write, loada, loadb, asel, bsel, loadc, loads, clk;
   input [2:0] readnum, writenum;
   input [1:0] shift, ALUop;

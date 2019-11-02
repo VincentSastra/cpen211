@@ -13,6 +13,8 @@
 `define instruct8 4'b0110 //STR
 `define instruct9 4'b0111 //HALT
 `define branch 4'b1000 //Branch is set PC = PC + 1 + sx(im8)
+`define dcall 4'b1010 //Direct call 
+`define icall 4'b1011 //Indirect call
 
 //define some steps for the FSM
 `define one 4'b0000
@@ -39,7 +41,7 @@ module cpu(clk, reset, read_data, mem_cmd, datapath_out, mem_addr, halt); //top 
 	//output N, V, Z, w;
 	
 	wire [15:0] instr, sximm8, sximm5; // instr = instruction that is being operated
-	wire load_ir, load_pc, reset_pc, addr_sel;
+	wire load_ir, load_pc, reset_pc, addr_sel, branch_link;
 
 	wire [8:0] PC, DataAddressOut, next_pc;
 	wire Z, N, V, branch_load;
@@ -53,6 +55,9 @@ module cpu(clk, reset, read_data, mem_cmd, datapath_out, mem_addr, halt); //top 
 	vDFFE #(16) instruction(clk, load_ir, read_data, instr); //instruction register
 	
 	assign next_pc = reset_pc ? 9'b00000_0000 : (branch_load ? (PC + sximm8) : (PC + 1'b1));
+	assign next_pc = reset_pc ? 9'b00000_0000 : 
+					(branch_load ? (PC + sximm8) : 
+					(branch_link ? (reg_out - 1'b1) : (PC + 1'b1)));
 
 	vDFFE #(9) PCvDFF(clk, load_pc, next_pc, PC); //Program counter register	
 	vDFFE #(9) DataAddress(clk, load_addr, datapath_out[8:0], DataAddressOut); //data address register
@@ -82,14 +87,14 @@ module cpu(clk, reset, read_data, mem_cmd, datapath_out, mem_addr, halt); //top 
 					  //added for lab 6
 					  read_data, PC, sximm8, sximm5,
 					  // outputs
-					  Z, N, V, datapath_out); //accesses editted module from lab5 - does the mathematical operations and read/writes from registers
+					  Z, N, V, datapath_out, reg_out); //accesses editted module from lab5 - does the mathematical operations and read/writes from registers
 				 
 	controllerFSM con(clk, reset, opcode, op, 
 							instr[10:8], Z, N, V, // input for Lab8 
 							nsel, loada, loadb, loadc, vsel, write, asel, bsel, loads, // Outputs for datapath 
 							load_ir, load_pc,
 							reset_pc, addr_sel, mem_cmd, load_addr,
-							branch_load, halt); // addition for Lab8
+							branch_load, branch_link, halt); // addition for Lab8
 	//runs the finite state machine which will control the decoder and the datapath
 endmodule //cpu
 
@@ -134,12 +139,13 @@ endmodule
 
 module controllerFSM(clk, reset, opcode, op, 
 					cond, Z, N, V,
-					nsel, loada, loadb, loadc, vsel, write, asel, bsel, loads, load_ir, load_pc, reset_pc, addr_sel, mem_cmd, load_addr, branch_load, halt);
+					nsel, loada, loadb, loadc, vsel, write, asel, bsel, loads, load_ir, load_pc, reset_pc, addr_sel, mem_cmd, load_addr, 
+					branch_load, branch_link, halt);
 	input clk, reset, Z, N, V;
 	input [2:0] opcode, cond;
 	input [1:0] op;
 	output halt;
-	output reg loada, loadb, loadc, write, asel, bsel, loads, reset_pc, addr_sel, load_ir, load_pc, load_addr, branch_load;
+	output reg loada, loadb, loadc, write, asel, bsel, loads, reset_pc, addr_sel, load_ir, load_pc, load_addr, branch_load, branch_link;
 	output reg [1:0] mem_cmd;
 	output reg [2:0] nsel;
 	output reg [3:0] vsel;
@@ -159,7 +165,7 @@ module controllerFSM(clk, reset, opcode, op,
 							`two: present_state <= `IF2; // if IF1 go to IF2
 							`three: present_state <= `UpdatePC; // if IF2 go to UpdatePC
 							`four: begin
-								case({opcode,op}) //case to move into the right instruction set
+								casex({opcode,op}) //case to move into the right instruction set
 									5'b11010: present_state <= {`instruct1, `one}; //instruction one moves to regsiter Rd sign extend
 									5'b11000: present_state <= {`instruct2, `one}; //instruction two moves to Rd and shift
 									5'b10100: present_state <= {`instruct3, `one}; //instrution 3 Adds Rn to shifted Rm into Rd
@@ -169,7 +175,10 @@ module controllerFSM(clk, reset, opcode, op,
 									5'b01100: present_state <= {`instruct7, `one}; //instruction 7 load
 									5'b10000: present_state <= {`instruct8, `one}; //instruction 8 store
 									5'b11100: present_state <= {`instruct9, `one}; //instruction 9 Inifinite halt loop - resets pc 
-									5'b00100: present_state <= {`branch, `one};
+									5'b00100: present_state <= {`branch, `one}; //For branching out
+									5'b01011: present_state <= {`dcall, `one}; // For direct call
+									5'b01010: present_state <= {`icall, `one}; // For indirect call
+									5'b01000: present_state <= {`icall, `two}; // Return back which is just icall step 2
 									default: present_state <= 8'bxxxx_xxxx;
 								endcase //waitstate
 								end
@@ -179,12 +188,14 @@ module controllerFSM(clk, reset, opcode, op,
 								`one: present_state <= `IF1;
 								default: present_state <= 8'bxxxx_xxxx;
 							endcase //present_state step
+
 			`instruct2: case(present_state[3:0]) //also instruction 6
 								`one: present_state[3:0] <= `two;
 								`two: present_state[3:0] <= `three;
 								`three: present_state <= `IF1;
 								default: present_state[3:0] <= 4'bxxxx;
 							endcase 
+
 			`instruct3: case(present_state[3:0]) //also instruction 5
 								`one: present_state[3:0] <= `two;
 								`two: present_state[3:0] <= `three;
@@ -192,12 +203,14 @@ module controllerFSM(clk, reset, opcode, op,
 								`four: present_state <= `IF1;
 								default: present_state[3:0] <= 4'bxxxx;	
 							endcase 
+
 			`instruct4: case(present_state[3:0])
 								`one: present_state[3:0] <= `two;
 								`two: present_state[3:0] <= `three;
 								`three: present_state <= `IF1;
 								default: present_state[3:0] <= 4'bxxxx;
 							endcase 
+
 			`instruct7: case (present_state[3:0])
 								`one: present_state[3:0] <= `two;
 								`two: present_state[3:0] <= `three;
@@ -216,14 +229,28 @@ module controllerFSM(clk, reset, opcode, op,
 								`six: present_state <= `IF1;
 								default: present_state[3:0] <= 4'bxxxx;	
 							endcase
+
 			`instruct9: case (present_state[3:0])
 								`one: present_state[3:0] <= `one;
 								default: present_state[3:0] <= 4'bxxxx;
-							endcase
+							endcase			
+
 			`branch: case (present_state[3:0])
 								`one: present_state <= `IF1;
 								default: present_state[3:0] <= 4'bxxxx;
 							endcase
+
+			`dcall: case (present_state[3:0])
+								`one: present_state <= `IF1;
+								default: present_state[3:0] <= 4'bxxxx;
+							endcase
+			
+			`icall: case (present_state[3:0])
+								`one: present_state[3:0] <= `two;
+								`two: present_state <= `IF1;
+								default: present_state[3:0] <= 4'bxxxx;
+							endcase
+			
 						
 			endcase //present_state instruction
 		end
@@ -800,7 +827,6 @@ module controllerFSM(clk, reset, opcode, op,
 
 	{`branch, `one}: 	begin
 								reset_pc = 0;
-								load_pc = 1;
 
 								mem_cmd = `MNONE;
 								addr_sel = 0;
@@ -819,17 +845,95 @@ module controllerFSM(clk, reset, opcode, op,
 								vsel <= 4'b0000;
 
 								case(cond)
-									3'b000: branch_load = 1'b1; 
-									3'b001: branch_load = Z;
-									3'b010: branch_load = ~Z;
-									3'b011: branch_load = N ^ Z;
-									3'b100: branch_load = (N ^ Z) | Z;
-									default: branch_load = 1'bx;
+									3'b000: begin branch_load = 1'b1; 
+												 	load_pc = 1'b1; end
+									3'b001: begin branch_load = Z;
+													load_pc = Z; end
+									3'b010: begin branch_load = ~Z;
+													load_pc = ~Z; end
+									3'b011: begin branch_load = N ^ V;
+													load_pc = N ^ V; end
+									3'b100: begin branch_load = (N ^ V) | Z;
+													load_pc = (N ^ V) | Z; end
+									default: begin branch_load = 1'bx;
+													load_pc = 1'bx; end
 								endcase
 
 							end
 
+	{`dcall, `one}:		begin
 
+								reset_pc = 0;
+								load_pc = 1;
+								branch_load = 1;
+								branch_link = 0;
+
+								mem_cmd = `MNONE;
+								addr_sel = 0;
+								load_ir = 0;
+								load_addr = 1'b0;
+				
+								nsel <= 3'b100;
+								write <= 1'b1;
+								loada <= 1'b0;
+								loads <= 1'b0;
+
+								loadb <= 1'b0;
+								loadc <= 1'b0;
+								asel <= 1'b0;
+								bsel <= 1'b0;
+								vsel <= 4'b0010;
+							end
+
+	{`icall, `one}:		begin
+
+								reset_pc = 0;
+								load_pc = 0;
+								branch_load = 0;
+								branch_link = 0;
+
+								mem_cmd = `MNONE;
+								addr_sel = 0;
+								load_ir = 0;
+								load_addr = 1'b0;
+				
+								nsel <= 3'b100;
+								write <= 1'b1;
+								loada <= 1'b0;
+								loads <= 1'b0;
+
+								loadb <= 1'b0;
+								loadc <= 1'b0;
+								asel <= 1'b0;
+								bsel <= 1'b0;
+								vsel <= 4'b0010;
+
+							end
+
+	{`icall, `two}:		begin
+
+								reset_pc = 0;
+								load_pc = 1;
+								branch_load = 0;
+								branch_link = 1;
+
+								mem_cmd = `MNONE;
+								addr_sel = 0;
+								load_ir = 0;
+								load_addr = 1'b0;
+				
+								nsel <= 3'b010;
+								write <= 1'b0;
+								loada <= 1'b0;
+								loads <= 1'b0;
+
+								loadb <= 1'b0;
+								loadc <= 1'b0;
+								asel <= 1'b0;
+								bsel <= 1'b0;
+								vsel <= 4'b0000;
+
+							end
 	default: begin
 				nsel <= 3'bxxx;
 				vsel <= 4'bxxxx;
