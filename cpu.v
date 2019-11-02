@@ -263,6 +263,7 @@ module controllerFSM(clk, reset, opcode, op,
 				branch_load = 0;
 				reset_pc = 1;
 				load_pc = 1;
+				branch_link = 0;
 
 				mem_cmd = 0;
 				addr_sel = 0;
@@ -283,6 +284,7 @@ module controllerFSM(clk, reset, opcode, op,
 				branch_load = 0;
 				reset_pc = 0;
 				load_pc = 0;
+				branch_link = 0;
 
 				mem_cmd = `MREAD;
 				addr_sel = 1;
@@ -303,6 +305,7 @@ module controllerFSM(clk, reset, opcode, op,
 				branch_load = 0;
 				reset_pc = 0;
 				load_pc = 0;
+				branch_link = 0;
 
 				mem_cmd = `MREAD;
 				addr_sel = 1;
@@ -323,6 +326,7 @@ module controllerFSM(clk, reset, opcode, op,
 				branch_load = 0;
 				reset_pc = 0;
 				load_pc = 1;
+				branch_link = 0;
 
 				mem_cmd = `MREAD;
 				addr_sel = 0;
@@ -344,6 +348,7 @@ module controllerFSM(clk, reset, opcode, op,
 								branch_load = 0;
 								reset_pc = 0;
 								load_pc = 0;
+								branch_link = 0;
 
 								mem_cmd = `MNONE;
 								addr_sel = 0;
@@ -365,6 +370,7 @@ module controllerFSM(clk, reset, opcode, op,
 								branch_load = 0;
 								reset_pc = 0;
 								load_pc = 0;
+								branch_link = 0;
 
 								mem_cmd = `MNONE;
 								addr_sel = 0;
@@ -386,6 +392,7 @@ module controllerFSM(clk, reset, opcode, op,
 								branch_load = 0;
 								reset_pc = 0;
 								load_pc = 0;
+								branch_link = 0;
 
 								mem_cmd = `MNONE;
 								addr_sel = 0;
@@ -407,6 +414,7 @@ module controllerFSM(clk, reset, opcode, op,
 								branch_load = 0;
 								reset_pc = 0;
 								load_pc = 0;
+								branch_link = 0;
 
 								mem_cmd = `MNONE;
 								addr_sel = 0;
@@ -428,6 +436,7 @@ module controllerFSM(clk, reset, opcode, op,
 								branch_load = 0;
 								reset_pc = 0;
 								load_pc = 0;
+								branch_link = 0;
 
 								mem_cmd = `MNONE;
 								addr_sel = 0;
@@ -449,6 +458,7 @@ module controllerFSM(clk, reset, opcode, op,
 								branch_load = 0;
 								reset_pc = 0;
 								load_pc = 0;
+								branch_link = 0;
 
 								mem_cmd = `MNONE;
 								addr_sel = 0;
@@ -470,6 +480,7 @@ module controllerFSM(clk, reset, opcode, op,
 								branch_load = 0;
 								reset_pc = 0;
 								load_pc = 0;
+								branch_link = 0;
 
 								mem_cmd = `MNONE;
 								addr_sel = 0;
@@ -491,6 +502,7 @@ module controllerFSM(clk, reset, opcode, op,
 								branch_load = 0;
 								reset_pc = 0;
 								load_pc = 0;
+								branch_link = 0;
 
 								mem_cmd = `MNONE;
 								addr_sel = 0;
@@ -513,6 +525,7 @@ module controllerFSM(clk, reset, opcode, op,
 								branch_load = 0;
 								reset_pc = 0;
 								load_pc = 0;
+								branch_link = 0;
 
 								mem_cmd = `MNONE;
 								addr_sel = 0;
@@ -534,6 +547,7 @@ module controllerFSM(clk, reset, opcode, op,
 								branch_load = 0;
 								reset_pc = 0;
 								load_pc = 0;
+								branch_link = 0;
 
 								mem_cmd = `MNONE;
 								addr_sel = 0;
@@ -555,6 +569,7 @@ module controllerFSM(clk, reset, opcode, op,
 								branch_load = 0;
 								reset_pc = 0;
 								load_pc = 0;
+								branch_link = 0;
 
 								mem_cmd = `MNONE;
 								addr_sel = 0;
@@ -576,6 +591,7 @@ module controllerFSM(clk, reset, opcode, op,
 								branch_load = 0;
 								reset_pc = 0;
 								load_pc = 0;
+								branch_link = 0;
 
 								mem_cmd = `MNONE;
 								addr_sel = 0;
@@ -597,6 +613,7 @@ module controllerFSM(clk, reset, opcode, op,
 								branch_load = 0;
 								reset_pc = 0;
 								load_pc = 0;
+								branch_link = 0;
 
 								mem_cmd = `MNONE;
 								addr_sel = 0;
@@ -618,6 +635,7 @@ module controllerFSM(clk, reset, opcode, op,
 								branch_load = 0;
 								reset_pc = 0;
 								load_pc = 0;
+								branch_link = 0;
 
 								mem_cmd = `MREAD;
 								addr_sel = 0;
@@ -639,6 +657,7 @@ module controllerFSM(clk, reset, opcode, op,
 								branch_load = 0;
 								reset_pc = 0;
 								load_pc = 0;
+								branch_link = 0;
 
 								mem_cmd = `MREAD;
 								addr_sel = 0;
@@ -660,6 +679,7 @@ module controllerFSM(clk, reset, opcode, op,
 								branch_load = 0;
 								reset_pc = 0;
 								load_pc = 0;
+								branch_link = 0;
 
 								mem_cmd = `MREAD;
 								addr_sel = 0;
@@ -681,6 +701,7 @@ module controllerFSM(clk, reset, opcode, op,
 								branch_load = 0;
 								reset_pc = 0;
 								load_pc = 0;
+								branch_link = 0;
 
 								mem_cmd = `MNONE;
 								addr_sel = 0;
@@ -702,6 +723,7 @@ module controllerFSM(clk, reset, opcode, op,
 								branch_load = 0;
 								reset_pc = 0;
 								load_pc = 0;
+								branch_link = 0;
 
 								mem_cmd = `MNONE;
 								addr_sel = 0;
@@ -723,6 +745,7 @@ module controllerFSM(clk, reset, opcode, op,
 								branch_load = 0;
 								reset_pc = 0;
 								load_pc = 0;
+								branch_link = 0;
 
 								mem_cmd = `MREAD;
 								addr_sel = 0;
@@ -744,6 +767,7 @@ module controllerFSM(clk, reset, opcode, op,
 								branch_load = 0;
 								reset_pc = 0;
 								load_pc = 0;
+								branch_link = 0;
 
 								mem_cmd = `MNONE;
 								addr_sel = 0;
@@ -765,6 +789,7 @@ module controllerFSM(clk, reset, opcode, op,
 								branch_load = 0;
 								reset_pc = 0;
 								load_pc = 0;
+								branch_link = 0;
 
 								mem_cmd = `MWRITE;
 								addr_sel = 0;
@@ -786,6 +811,7 @@ module controllerFSM(clk, reset, opcode, op,
 								branch_load = 0;
 								reset_pc = 0;
 								load_pc = 0;
+								branch_link = 0;
 
 								mem_cmd = `MWRITE;
 								addr_sel = 0;
@@ -807,6 +833,7 @@ module controllerFSM(clk, reset, opcode, op,
 								branch_load = 0;
 								reset_pc = 1;
 								load_pc = 1;
+								branch_link = 0;
 
 								mem_cmd = `MNONE;
 								addr_sel = 0;
@@ -827,6 +854,7 @@ module controllerFSM(clk, reset, opcode, op,
 
 	{`branch, `one}: 	begin
 								reset_pc = 0;
+								branch_link = 0;
 
 								mem_cmd = `MNONE;
 								addr_sel = 0;
@@ -950,6 +978,7 @@ module controllerFSM(clk, reset, opcode, op,
 				mem_cmd = 2'bxx;
 				addr_sel = 1'bx;
 				load_ir = 1'bx;
+				branch_load = 1'bx;
 			end
 
 	
