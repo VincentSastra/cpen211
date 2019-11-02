@@ -16,13 +16,13 @@ module lab7_top(KEY,SW,LEDR,HEX0,HEX1,HEX2,HEX3,HEX4,HEX5);
 
 	wire clk = ~KEY[0];
 	wire reset = ~KEY[1];
-	wire load_led, load_sw;
+	wire load_led, load_sw, halt;
 	wire [1:0] mem_cmd; // bit 0 is read. bit 1 is write
 	wire [8:0] mem_addr;
 	wire [15:0] read_data, write_data, dout;
 	wire [5:0] present_state;
 	
-   	cpu CPU(clk, reset, read_data, mem_cmd, write_data, mem_addr); //initalizes the top level cpu module
+   	cpu CPU(clk, reset, read_data, mem_cmd, write_data, mem_addr, halt); //initalizes the top level cpu module
 	
 		// Tri state driver to read   	
 		wire msel = (`MREAD == mem_cmd) & (mem_addr[8] == 1'b0);
@@ -38,6 +38,7 @@ module lab7_top(KEY,SW,LEDR,HEX0,HEX1,HEX2,HEX3,HEX4,HEX5);
    	assign read_data[7:0] = load_sw ? SW[7:0] : 8'bzzzzzzzz; //other tri - state driver. Similar design to mux but with high impedance output
 
    	vDFFE #(8) LED(clk, load_led, write_data[7:0], LEDR[7:0]); //try changing to load_led
+		assign LEDR[8] = halt;
 		
 		assign HEX0 = 7'b1111_111; //unused hex displays, just set to off for neatness sake
 		assign HEX1 = 7'b1111_111;
