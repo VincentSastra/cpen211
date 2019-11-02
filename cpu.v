@@ -146,7 +146,7 @@ module controllerFSM(clk, reset, opcode, op,
 	
 	reg [7:0] present_state;
 	
-	assign halt = (present_state === {`instruct9, `one});
+	assign halt = (present_state == {`instruct9, `one});
 
 	always @(posedge clk) begin //always block that runs the meat of the FSM (changes states), sensitivty is at rising edge of the clk
 		if (reset) begin //check for reset
