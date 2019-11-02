@@ -40,7 +40,7 @@ module cpu(clk, reset, read_data, mem_cmd, datapath_out, mem_addr, halt); //top 
 	output halt;
 	//output N, V, Z, w;
 	
-	wire [15:0] instr, sximm8, sximm5; // instr = instruction that is being operated
+	wire [15:0] instr, sximm8, sximm5, reg_out; // instr = instruction that is being operated
 	wire load_ir, load_pc, reset_pc, addr_sel, branch_link;
 
 	wire [8:0] PC, DataAddressOut, next_pc;
