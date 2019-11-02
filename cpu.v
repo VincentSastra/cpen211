@@ -142,94 +142,78 @@ module controllerFSM(clk, reset, opcode, op, nsel, loada, loadb, loadc, vsel, wr
 	always @(posedge clk) begin //always block that runs the meat of the FSM (changes states), sensitivty is at rising edge of the clk
 		if (reset) begin //check for reset
 			present_state <= `Reset; //move to reset aka waitState if it is high
-		end //if reset
-	
-	/*case(present_state)
-		`UpdatePC: begin //only leave waitState if start is 1
-			case({opcode,op}) //case to move into the right instruction set
-				5'b11010: present_state <= {`instruct1, `one}; //instruction one moves to regsiter Rd sign extend
-				5'b11000: present_state <= {`instruct2, `one}; //instruction two moves to Rd and shift
-				5'b10100: present_state <= {`instruct3, `one}; //instrution 3 Adds Rn to shifted Rm into Rd
-				5'b10101: present_state <= {`instruct4, `one}; //instruction 4 status of Rn - shfited Rm
-				5'b10110: present_state <= {`instruct5, `one}; //instruction 5 Rn anded with shifted Rm
-				5'b10111: present_state <= {`instruct6, `one}; //instruction 6 Rd is shifted negation of Rn
-				default: present_state <= 6'bxxx_xxx;
-			endcase //waitstate
-		end
-		//default: present_state <= 6'bxxxxxx;		
-	endcase
-*/
+		end else begin//if reset
 
-	case(present_state [5:3]) //the following case blocks check the steps within each instruction, as soon as one step is completed (clk is high) then the next step is ready to start. If a step is last for an instruction, it will connect back to waitState
-		3'b000: case(present_state[2:0])
-						`one: present_state <= `IF1; // if Reset go to IF1
-						`two: present_state <= `IF2; // if IF1 go to IF2
-						`three: present_state <= `UpdatePC; // if IF2 go to UpdatePC
-						`four: begin
-							case({opcode,op}) //case to move into the right instruction set
-								5'b11010: present_state <= {`instruct1, `one}; //instruction one moves to regsiter Rd sign extend
-								5'b11000: present_state <= {`instruct2, `one}; //instruction two moves to Rd and shift
-								5'b10100: present_state <= {`instruct3, `one}; //instrution 3 Adds Rn to shifted Rm into Rd
-								5'b10101: present_state <= {`instruct4, `one}; //instruction 4 status of Rn - shfited Rm
-								5'b10110: present_state <= {`instruct5, `one}; //instruction 5 Rn anded with shifted Rm
-								5'b10111: present_state <= {`instruct6, `one}; //instruction 6 Rd is shifted negation of Rn
-								5'b01100: present_state <= {`instruct7, `one}; //instruction 7 load
-								5'b10000: present_state <= {`instruct8, `one}; //instruction 8 store
-								5'b11100: present_state <= {`instruct9, `one}; //instruction 9 Inifinite halt loop - resets pc 
-								default: present_state <= 6'bxxx_xxx;
-							endcase //waitstate
-							end
-						default: present_state <= 6'bxxx_xxx;
-					endcase
-		`instruct1: case(present_state[2:0])
-							`one: present_state <= `IF1;
+		case(present_state [5:3]) //the following case blocks check the steps within each instruction, as soon as one step is completed (clk is high) then the next step is ready to start. If a step is last for an instruction, it will connect back to waitState
+			3'b000: case(present_state[2:0])
+							`one: present_state <= `IF1; // if Reset go to IF1
+							`two: present_state <= `IF2; // if IF1 go to IF2
+							`three: present_state <= `UpdatePC; // if IF2 go to UpdatePC
+							`four: begin
+								case({opcode,op}) //case to move into the right instruction set
+									5'b11010: present_state <= {`instruct1, `one}; //instruction one moves to regsiter Rd sign extend
+									5'b11000: present_state <= {`instruct2, `one}; //instruction two moves to Rd and shift
+									5'b10100: present_state <= {`instruct3, `one}; //instrution 3 Adds Rn to shifted Rm into Rd
+									5'b10101: present_state <= {`instruct4, `one}; //instruction 4 status of Rn - shfited Rm
+									5'b10110: present_state <= {`instruct5, `one}; //instruction 5 Rn anded with shifted Rm
+									5'b10111: present_state <= {`instruct6, `one}; //instruction 6 Rd is shifted negation of Rn
+									5'b01100: present_state <= {`instruct7, `one}; //instruction 7 load
+									5'b10000: present_state <= {`instruct8, `one}; //instruction 8 store
+									5'b11100: present_state <= {`instruct9, `one}; //instruction 9 Inifinite halt loop - resets pc 
+									default: present_state <= 6'bxxx_xxx;
+								endcase //waitstate
+								end
 							default: present_state <= 6'bxxx_xxx;
-						endcase //present_state step
-		`instruct2: case(present_state [2:0]) //also instruction 6
-							`one: present_state[2:0] <= `two;
-							`two: present_state[2:0] <= `three;
-							`three: present_state <= `IF1;
-							default: present_state[2:0] <= 3'bxxx;
-						endcase 
-		`instruct3: case(present_state [2:0]) //also instruction 5
-							`one: present_state[2:0] <= `two;
-							`two: present_state[2:0] <= `three;
-							`three: present_state[2:0] <= `four;
-							`four: present_state <= `IF1;
-							default: present_state[2:0] <= 3'bxxx;	
-						endcase 
-		`instruct4: case(present_state [2:0])
-							`one: present_state[2:0] <= `two;
-							`two: present_state[2:0] <= `three;
-							`three: present_state <= `IF1;
-							default: present_state[2:0] <= 3'bxxx;
-						endcase 
-		`instruct7: case (present_state [2:0])
-							`one: present_state[2:0] <= `two;
-							`two: present_state[2:0] <= `three;
-							`three: present_state[2:0] <= `four;
-							`four: present_state[2:0] <= `five;
-							`five: present_state <= `IF1;
-							default: present_state[2:0] <= 3'bxxx;	
 						endcase
-		
-		`instruct8: case (present_state [2:0])
-							`one: present_state[2:0] <= `two;
-							`two: present_state[2:0] <= `three;
-							`three: present_state[2:0] <= `four;
-							`four: present_state[2:0] <= `five;
-							`five: present_state[2:0] <= `six;
-							`six: present_state <= `IF1;
-							default: present_state[2:0] <= 3'bxxx;	
-						endcase
-		`instruct9: case (present_state[2:0])
-							`one: present_state[2:0] <= `one;
-							default: present_state[2:0] <= 3'bxxx;
-						endcase
+			`instruct1: case(present_state[2:0])
+								`one: present_state <= `IF1;
+								default: present_state <= 6'bxxx_xxx;
+							endcase //present_state step
+			`instruct2: case(present_state [2:0]) //also instruction 6
+								`one: present_state[2:0] <= `two;
+								`two: present_state[2:0] <= `three;
+								`three: present_state <= `IF1;
+								default: present_state[2:0] <= 3'bxxx;
+							endcase 
+			`instruct3: case(present_state [2:0]) //also instruction 5
+								`one: present_state[2:0] <= `two;
+								`two: present_state[2:0] <= `three;
+								`three: present_state[2:0] <= `four;
+								`four: present_state <= `IF1;
+								default: present_state[2:0] <= 3'bxxx;	
+							endcase 
+			`instruct4: case(present_state [2:0])
+								`one: present_state[2:0] <= `two;
+								`two: present_state[2:0] <= `three;
+								`three: present_state <= `IF1;
+								default: present_state[2:0] <= 3'bxxx;
+							endcase 
+			`instruct7: case (present_state [2:0])
+								`one: present_state[2:0] <= `two;
+								`two: present_state[2:0] <= `three;
+								`three: present_state[2:0] <= `four;
+								`four: present_state[2:0] <= `five;
+								`five: present_state <= `IF1;
+								default: present_state[2:0] <= 3'bxxx;	
+							endcase
+			
+			`instruct8: case (present_state [2:0])
+								`one: present_state[2:0] <= `two;
+								`two: present_state[2:0] <= `three;
+								`three: present_state[2:0] <= `four;
+								`four: present_state[2:0] <= `five;
+								`five: present_state[2:0] <= `six;
+								`six: present_state <= `IF1;
+								default: present_state[2:0] <= 3'bxxx;	
+							endcase
+			`instruct9: case (present_state[2:0])
+								`one: present_state[2:0] <= `one;
+								default: present_state[2:0] <= 3'bxxx;
+							endcase
 
 						
-	endcase //present_state instruction
-	
+			endcase //present_state instruction
+		end
 	end
 	
 	always @(*) begin //always block that sets the output for the states of the FSM, runs whenever something changes
@@ -310,7 +294,8 @@ module controllerFSM(clk, reset, opcode, op, nsel, loada, loadb, loadc, vsel, wr
 				loads <= 1'b0;
 				asel <= 1'b0;
 				bsel <= 1'b0;
-					 end					 
+					 end
+					 					 
 	{`instruct1, `one}: begin 
 								reset_pc = 0;
 								load_pc = 0;
