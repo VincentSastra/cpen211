@@ -20,6 +20,9 @@ add wave -noupdate /lab8_check_tb/DUT/msel
 add wave -noupdate /lab8_check_tb/DUT/write
 add wave -noupdate -divider CPU
 add wave -noupdate /lab8_check_tb/DUT/CPU/read_data
+add wave -noupdate /lab8_check_tb/DUT/CPU/PC
+add wave -noupdate /lab8_check_tb/DUT/CPU/DataAddressOut
+add wave -noupdate /lab8_check_tb/DUT/CPU/next_pc
 add wave -noupdate /lab8_check_tb/DUT/CPU/datapath_out
 add wave -noupdate /lab8_check_tb/DUT/CPU/mem_addr
 add wave -noupdate /lab8_check_tb/DUT/CPU/mem_cmd
@@ -27,6 +30,8 @@ add wave -noupdate /lab8_check_tb/DUT/CPU/halt
 add wave -noupdate /lab8_check_tb/DUT/CPU/instr
 add wave -noupdate /lab8_check_tb/DUT/CPU/sximm8
 add wave -noupdate /lab8_check_tb/DUT/CPU/sximm5
+add wave -noupdate /lab8_check_tb/DUT/CPU/con/present_state
+add wave -noupdate /lab8_check_tb/DUT/CPU/con/load_pc
 add wave -noupdate -divider FSM
 add wave -noupdate /lab8_check_tb/DUT/CPU/con/clk
 add wave -noupdate /lab8_check_tb/DUT/CPU/con/reset
@@ -47,13 +52,11 @@ add wave -noupdate /lab8_check_tb/DUT/CPU/con/loads
 add wave -noupdate /lab8_check_tb/DUT/CPU/con/reset_pc
 add wave -noupdate /lab8_check_tb/DUT/CPU/con/addr_sel
 add wave -noupdate /lab8_check_tb/DUT/CPU/con/load_ir
-add wave -noupdate /lab8_check_tb/DUT/CPU/con/load_pc
 add wave -noupdate /lab8_check_tb/DUT/CPU/con/load_addr
 add wave -noupdate /lab8_check_tb/DUT/CPU/con/branch_load
 add wave -noupdate /lab8_check_tb/DUT/CPU/con/mem_cmd
 add wave -noupdate /lab8_check_tb/DUT/CPU/con/nsel
 add wave -noupdate /lab8_check_tb/DUT/CPU/con/vsel
-add wave -noupdate /lab8_check_tb/DUT/CPU/con/present_state
 add wave -noupdate -divider REGFILE
 add wave -noupdate /lab8_check_tb/DUT/CPU/DP/REGFILE/data_in
 add wave -noupdate /lab8_check_tb/DUT/CPU/DP/REGFILE/write
@@ -67,7 +70,7 @@ add wave -noupdate /lab8_check_tb/DUT/CPU/DP/REGFILE/R5
 add wave -noupdate /lab8_check_tb/DUT/CPU/DP/REGFILE/R6
 add wave -noupdate /lab8_check_tb/DUT/CPU/DP/REGFILE/R7
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {47 ps} 0}
+WaveRestoreCursors {{Cursor 1} {1849 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 150
 configure wave -valuecolwidth 100
@@ -83,4 +86,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ps
 update
-WaveRestoreZoom {0 ps} {1664 ps}
+WaveRestoreZoom {1839 ps} {2025 ps}

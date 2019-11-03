@@ -54,10 +54,9 @@ module cpu(clk, reset, read_data, mem_cmd, datapath_out, mem_addr, halt); //top 
 	
 	vDFFE #(16) instruction(clk, load_ir, read_data, instr); //instruction register
 	
-	assign next_pc = reset_pc ? 9'b00000_0000 : (branch_load ? (PC + sximm8) : (PC + 1'b1));
 	assign next_pc = reset_pc ? 9'b00000_0000 : 
 					(branch_load ? (PC + sximm8) : 
-					(branch_link ? (reg_out - 1'b1) : (PC + 1'b1)));
+					(branch_link ? (reg_out[8:0]) : (PC + 1'b1)));
 
 	vDFFE #(9) PCvDFF(clk, load_pc, next_pc, PC); //Program counter register	
 	vDFFE #(9) DataAddress(clk, load_addr, datapath_out[8:0], DataAddressOut); //data address register
@@ -89,7 +88,7 @@ module cpu(clk, reset, read_data, mem_cmd, datapath_out, mem_addr, halt); //top 
 					  // outputs
 					  Z, N, V, datapath_out, reg_out); //accesses editted module from lab5 - does the mathematical operations and read/writes from registers
 				 
-	controllerFSM con(clk, reset, opcode, op, 
+	controllerFSM FSM(clk, reset, opcode, op, 
 							instr[10:8], Z, N, V, // input for Lab8 
 							nsel, loada, loadb, loadc, vsel, write, asel, bsel, loads, // Outputs for datapath 
 							load_ir, load_pc,
@@ -150,8 +149,13 @@ module controllerFSM(clk, reset, opcode, op,
 	output reg [2:0] nsel;
 	output reg [3:0] vsel;
 	
+	wire [19:0] p;
+	assign p [15:0] = {16{1'b0}};
+	assign p [19:17] = 3'b000;
+
 	reg [7:0] present_state;
-	
+	assign p [16] = (present_state === `IF1);
+
 	assign halt = (present_state == {`instruct9, `one});
 
 	always @(posedge clk) begin //always block that runs the meat of the FSM (changes states), sensitivty is at rising edge of the clk
@@ -901,7 +905,7 @@ module controllerFSM(clk, reset, opcode, op,
 								load_ir = 0;
 								load_addr = 1'b0;
 				
-								nsel <= 3'b100;
+								nsel <= 3'b001;
 								write <= 1'b1;
 								loada <= 1'b0;
 								loads <= 1'b0;
@@ -925,7 +929,7 @@ module controllerFSM(clk, reset, opcode, op,
 								load_ir = 0;
 								load_addr = 1'b0;
 				
-								nsel <= 3'b100;
+								nsel <= 3'b001;
 								write <= 1'b1;
 								loada <= 1'b0;
 								loads <= 1'b0;
