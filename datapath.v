@@ -26,6 +26,7 @@ module datapath (clk,
   assign V = Z_out[2]; //checks for overflow from status register
   
   wire [15:0] data_in, data_out, Aload, Bload, sout, Ain, Bin, out, sximm5;
+  wire [2:0] status_in;
   
   mux4 mod9(datapath_out, {7'b0000000, PC}, sximm8, mdata, vsel, data_in); //largely unused - waiting to be connected in lab7/8
   
@@ -42,9 +43,11 @@ module datapath (clk,
   ALU U2(Ain,Bin,ALUop,out, Zal); //performs appropriate math operator
   
   vDFFE #(16) mod5(clk, loadc, out, datapath_out); //register for load c (output)
-  vDFFE #(3) mod10(clk, loads, Zal, Z_out); //status register
-  
-endmodule
+  vDFFE #(3) mod10(clk, loads, (int_start ? status_in : Zal), Z_out); //status register
+  vDFFE #(16) bonus1(clk, int_start, datain, datapath_out);//register than comes from datapath in mux - load comes from common control -  need to ask vincent
+  vDFFE #(3) bonus2(clk, int_start, Z_out, status_in);//register than comes out of status register - load from common control, output goes through tristate buffer
+
+  endmodule
 
 
 
