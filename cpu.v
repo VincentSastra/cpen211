@@ -983,6 +983,7 @@ module controllerFSM(clk, reset, opcode, op,
 				addr_sel = 1'bx;
 				load_ir = 1'bx;
 				branch_load = 1'bx;
+				branch_link = 1'bx;
 			end
 
 	
