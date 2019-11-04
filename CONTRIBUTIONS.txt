@@ -1,31 +1,36 @@
-Vincent and Leah worked on this lab individually to start, but pair programmed and debugged most of lab6 together.
+Vincent and Leah pair programmed and debugged most of lab8 together. Some implementations for the bonus marks were done individually.
 
-Vincent work individually on Friday, October 25 from 4 pm to 6 pm in the MacLeod buildingd
-We worked together on Sunday, October 27th from 3 pm to 1 am in the MacLeod building.
-We worked together individually on Monday October 28th to finish the project 
+We worked together on Saturday, Nov 2 from 1 pm to 6 pm in the MacLeod building.
+We worked together on Sunday, Nov 3 from 2pm to 5 pm in ICCS.
+We worked individually between Sunday evening and Monday morning to implement the interrupt bonus.
+We worked together on Monday, Nov 4 from 11 am to 2 pm to finish debugging the bonus and to submit the lab.
 
-All of the code in lab6 is either our own, provided to us via the source files on piazza, or from the slides/textbook.
-In other words, we did not use someone else's lab5.
+All of the code in lab5, lab6, and lab7 is either our own, provided to us via the source files on piazza, or from the slides/textbook.
+In other words, we did not use someone else's labs to complete lab8.
 
 The following is a breakdown of the submitted code:
 
-Some edits were made to all lab5 files by both lab partners.
+Some edits were made to all lab8 files by both lab partners.
 
-lab_top.v was updated by Vincent
+cpu.v was updated by Vincent and Leah (pair programmed)
 
-cpu.v was updated by Leah
+lab8_top.v (formely lab7_top.v) was updated by Vincent and Leah (pair programmed)
 
-lab7_tb was made by Vincent
+cpu.v was updated by Vincent (for interrupt bonus)
 
-RAM was copied from slideset 7
+datapath.v was updated by Leah (for interrupt bonus)
 
-Debugging:
-The bulk of time on this lab was spent debugging. The following were SOME of the bugs we encountered and how we fixed them:
--There wasn't enough cycles for STR and LDR to load correctly, we discovered it after making some
-buffer state to check.
+Testbench for BLX bonus was written by Leah
 
--The switches and LED aren't connected because we accidently flipped the variables when writing the constant
+Testbench for interrupt bonus was written by Vincent
 
--Most of the bugs occurs when writing over the old code because sometimes we forget to change the 
-variables when we needed to change. So a lot of the time is spent following the signal changes
-in modelsim until we see where its diconnected or passing the wrong values
+
+
+Debugging - non-bonus section:
+There was not a lot of debugging to be done for the bulk of this lab. Because we were able to use our working previous labs and because of the expandability of our design, we were able to implement branching and function calls relatively easily.
+
+Debugging - BLX bonus:
+Again, limited debugging; however, we did use the waveform viewer in ModelSim to realize that we needed to modify the testbench we were using to look in a memory address that corresponded to the number of commands we issued.
+
+Debugging - Interrupt bonus:
+Most the time spent on this bonus was spent in designing the solution to the problem and the testbench. 
