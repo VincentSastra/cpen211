@@ -53,7 +53,7 @@ module cpu(clk, reset, read_data, mem_cmd, datapath_out, mem_addr, halt, interru
 	wire Z, N, V, branch_load;
 	
 	// Instructions for datapath	
-	wire [3:0] vsel;
+	wire [3:0] vsel, int_str_ldr;
 	wire [2:0] readnum, writenum, opcode, nsel;
 	wire [1:0] ALUop, shift, op;
 	wire loada, loadb, loadc, loads, write, asel, bsel, load_addr;
@@ -63,12 +63,13 @@ module cpu(clk, reset, read_data, mem_cmd, datapath_out, mem_addr, halt, interru
 	assign next_pc = reset_pc ? 9'b00000_0000 : 
 					(interrupt ? 9'b01101_1111 :
 					(branch_load ? (PC + sximm8) : 
-					(branch_link ? (reg_out[8:0]) : (PC + 1'b1)));
+					(branch_link ? (reg_out[8:0]) : (PC + 1'b1))));
 
 	vDFFE #(9) PCvDFF(clk, load_pc, next_pc, PC); //Program counter register	
 	vDFFE #(9) DataAddress(clk, load_addr, datapath_out[8:0], DataAddressOut); //data address register
-
-	assign mem_addr = addr_sel ? PC : DataAddressOut;	//simple mux
+	
+	
+	assign mem_addr = addr_sel ? PC : (int_str_ldr ? (8'b11100000 + DataAddressOut) : DataAddressOut);	//simple mux
 	//OVERVIEW OF BEHAVIOR
 	//if reset == 1 then FSM should go to reset state
 			//after this FSM should not do anything until s == 1 & poseedge clk
@@ -104,7 +105,7 @@ module cpu(clk, reset, read_data, mem_cmd, datapath_out, mem_addr, halt, interru
 							load_ir, load_pc,
 							reset_pc, addr_sel, mem_cmd, load_addr,
 							branch_load, branch_link, halt,
-							int_start, int_exit; // addition for Lab8
+							int_start, int_exit, int_str_ldr); // addition for Lab8
 	//runs the finite state machine which will control the decoder and the datapath
 endmodule //cpu
 
@@ -153,7 +154,7 @@ module controllerFSM(clk, reset, opcode, op,
 							load_ir, load_pc,
 							reset_pc, addr_sel, mem_cmd, load_addr,
 							branch_load, branch_link, halt,
-							int_start, int_exit; // addition for Lab8
+							int_start, int_exit, int_str_ldr); // addition for Lab8
 	//runs the finite state machine which will control the decoder and the datapath
 
 	input clk, reset, Z, N, V, interrupt;
@@ -163,7 +164,7 @@ module controllerFSM(clk, reset, opcode, op,
 	output reg loada, loadb, loadc, write, asel, bsel, loads, reset_pc, addr_sel, load_ir, load_pc, load_addr, branch_load, branch_link;
 	output reg [1:0] mem_cmd;
 	output reg [2:0] nsel;
-	output reg [3:0] vsel;
+	output reg [3:0] vsel, int_str_ldr;
 	
 	wire [19:0] p;
 	wire mask;
@@ -175,9 +176,9 @@ module controllerFSM(clk, reset, opcode, op,
 	assign p [16] = (present_state === `IF1);
 	assign halt = (present_state == {`instruct9, `one});
 
-	assign int_exit = (present_state == {`intext, `one})
+	assign int_exit = (present_state == {`intex, `one});
 	assign int_start = (present_state == {`intgo, `one});
-	vDFFE #(1) mask(clk, (int_exit | int_start), int_start, mask);
+	vDFFE #(1) mask1(clk, (int_exit | int_start), int_start, mask);
 
 	always @(posedge clk) begin //always block that runs the meat of the FSM (changes states), sensitivty is at rising edge of the clk
 		if (reset) begin //check for reset
@@ -1212,7 +1213,7 @@ module controllerFSM(clk, reset, opcode, op,
 
 							end
 
-	{`intext, `one}: 	begin
+	{`intex, `one}: 	begin
 
 								reset_pc = 0;
 								load_pc = 1;
@@ -1284,7 +1285,7 @@ module controllerFSM(clk, reset, opcode, op,
 
 	
 	endcase
-	
+	assign int_str_ldr = present_state;
 	end
 	
 	//no more w needed assign w = ( present_state === `waitState ); //controls the wait variable... aka sets w to one whenever we are in the waitState
