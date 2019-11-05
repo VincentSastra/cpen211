@@ -23,7 +23,7 @@ module lab8_stage2_tb;
       @(negedge CLOCK_50); // show advance to negative edge of clock
       $display("PC = %h", DUT.CPU.PC); 
     end
-    if (DUT.MEM.mem[26] !== -16'd23) begin err = 1; $display("FAILED: mem[25] wrong"); $stop; end
+    if (DUT.MEM.mem[25] !== -16'd23) begin err = 1; $display("FAILED: mem[25] wrong"); $stop; end
     if (~err) $display("PASSED");
     $stop;
   end
