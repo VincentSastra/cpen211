@@ -55,13 +55,14 @@ module cpu(clk, reset, read_data, mem_cmd, datapath_out, mem_addr, halt, interru
 	// Instructions for datapath	
 	wire [3:0] vsel;
 	wire [2:0] readnum, writenum, opcode, nsel;
-	wire [1:0] ALUop, shift, op;
+	wire [1:0] ALUop, shifts, shiftf, op;
 	wire loada, loadb, loadc, loads, write, asel, bsel, load_addr;
 	
 	vDFFE #(16) instruction(clk, load_ir, read_data, instr); //instruction register
 	
+	assign shiftf = shifts & ~{2{int_ls}};
 	assign next_pc = reset_pc ? 9'b00000_0000 : 
-					((int_start & ~mask) ? 9'b01101_1111 :
+					((int_start & ~mask) ? 9'b01110_0000 :
 					(branch_load ? (PC + sximm8) : 
 					(branch_link ? (reg_out[8:0]) : (PC + 1'b1))));
 
@@ -79,7 +80,7 @@ module cpu(clk, reset, read_data, mem_cmd, datapath_out, mem_addr, halt, interru
 
 	instruct_decoder ID (instr, // from instrucion vDDF
 				nsel, 
-				ALUop, sximm5, sximm8, shift,
+				ALUop, sximm5, sximm8, shifts,
 				readnum, writenum, op, opcode
 				); //instruction decoder, depends on cpu inputs, instrution register, and FSM outputs
 
@@ -87,7 +88,7 @@ module cpu(clk, reset, read_data, mem_cmd, datapath_out, mem_addr, halt, interru
                  //register operand fetch stage
                  readnum, vsel, loada, loadb, 
                  // computation stage
-					  shift, asel, bsel, ALUop, loadc, loads, 
+					  shiftf, asel, bsel, ALUop, loadc, loads, 
 					  // set when writing back to register file
 					  int_start, int_exit,
 					  // when starting interrupt loads the status register and PC
@@ -176,7 +177,7 @@ module controllerFSM(clk, reset, opcode, op,
 
 	assign int_exit = (present_state == {`intex, `one});
 	assign int_start = (present_state == {`intgo, `one});
-	assign int_ls = (present_state[7:4] == `intldr | `intstr);
+	assign int_ls = (present_state[7:4] == `intldr) | (present_state[7:4] == `intstr);
 	vDFFE #(1) MASK(clk, (int_exit | int_start | (present_state === `Reset) ), int_start, mask);
 
 	always @(posedge clk) begin //always block that runs the meat of the FSM (changes states), sensitivty is at rising edge of the clk
@@ -1034,7 +1035,7 @@ module controllerFSM(clk, reset, opcode, op,
 								load_ir = 0;
 								load_addr = 1'b1;
 				
-								nsel <= 3'b100;
+								nsel <= 3'b001;
 								write <= 1'b0;
 								loada <= 1'b0;
 								loads <= 1'b0;
