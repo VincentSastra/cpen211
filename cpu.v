@@ -47,7 +47,7 @@ module cpu(clk, reset, read_data, mem_cmd, datapath_out, mem_addr, halt, interru
 	//output N, V, Z, w;
 	
 	wire [15:0] instr, sximm8, sximm5, reg_out; // instr = instruction that is being operated
-	wire load_ir, load_pc, reset_pc, addr_sel, branch_link, int_start, int_exit, int_ls;
+	wire load_ir, load_pc, reset_pc, addr_sel, branch_link, int_start, int_exit, int_ls, store_state;
 
 	wire [8:0] PC, DataAddressOut, next_pc;
 	wire Z, N, V, branch_load, mask;
@@ -60,7 +60,7 @@ module cpu(clk, reset, read_data, mem_cmd, datapath_out, mem_addr, halt, interru
 	
 	vDFFE #(16) instruction(clk, load_ir, read_data, instr); //instruction register
 	
-	assign shiftf = shifts & ~{2{int_ls}};
+	assign shiftf = shifts & ~{2{int_ls}} & ~{2{store_state}};
 	assign next_pc = reset_pc ? 9'b00000_0000 : 
 					((int_start & ~mask) ? 9'b01110_0000 :
 					(branch_load ? (PC + sximm8) : 
@@ -104,7 +104,7 @@ module cpu(clk, reset, read_data, mem_cmd, datapath_out, mem_addr, halt, interru
 							nsel, loada, loadb, loadc, vsel, write, asel, bsel, loads, // Outputs for datapath 
 							load_ir, load_pc,
 							reset_pc, addr_sel, mem_cmd, load_addr,
-							branch_load, branch_link, halt,
+							branch_load, branch_link, halt, store_state,
 							int_start, int_exit, int_ls, mask); // addition for Lab8
 	//runs the finite state machine which will control the decoder and the datapath
 endmodule //cpu
@@ -153,14 +153,14 @@ module controllerFSM(clk, reset, opcode, op,
 							nsel, loada, loadb, loadc, vsel, write, asel, bsel, loads, // Outputs for datapath 
 							load_ir, load_pc,
 							reset_pc, addr_sel, mem_cmd, load_addr,
-							branch_load, branch_link, halt,
+							branch_load, branch_link, halt, store_state,
 							int_start, int_exit, int_ls, mask); // addition for Lab8
 	//runs the finite state machine which will control the decoder and the datapath
 
 	input clk, reset, Z, N, V, interrupt;
 	input [2:0] opcode, cond;
 	input [1:0] op;
-	output halt, int_start, int_exit, int_ls, mask;
+	output halt, int_start, int_exit, int_ls, mask, store_state;
 	output reg loada, loadb, loadc, write, asel, bsel, loads, reset_pc, addr_sel, load_ir, load_pc, load_addr, branch_load, branch_link;
 	output reg [1:0] mem_cmd;
 	output reg [2:0] nsel;
@@ -174,6 +174,7 @@ module controllerFSM(clk, reset, opcode, op,
 	reg [7:0] present_state;
 	assign p [16] = (present_state === `IF1);
 	assign halt = (present_state == {`instruct9, `one});
+	assign store_state = (present_state[7:4] == `instruct8);
 
 	assign int_exit = (present_state == {`intex, `one});
 	assign int_start = (present_state == {`intgo, `one});
