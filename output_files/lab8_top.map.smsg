@@ -1,0 +1,10 @@
+Info (10281): Verilog HDL Declaration information at regfile.v(8): object "R0" differs only in case from object "r0" in the same scope File: C:/Users/vince/Desktop/cpen211/regfile.v Line: 8
+Info (10281): Verilog HDL Declaration information at regfile.v(8): object "R1" differs only in case from object "r1" in the same scope File: C:/Users/vince/Desktop/cpen211/regfile.v Line: 8
+Info (10281): Verilog HDL Declaration information at regfile.v(8): object "R2" differs only in case from object "r2" in the same scope File: C:/Users/vince/Desktop/cpen211/regfile.v Line: 8
+Info (10281): Verilog HDL Declaration information at regfile.v(8): object "R3" differs only in case from object "r3" in the same scope File: C:/Users/vince/Desktop/cpen211/regfile.v Line: 8
+Info (10281): Verilog HDL Declaration information at regfile.v(8): object "R4" differs only in case from object "r4" in the same scope File: C:/Users/vince/Desktop/cpen211/regfile.v Line: 8
+Info (10281): Verilog HDL Declaration information at regfile.v(8): object "R5" differs only in case from object "r5" in the same scope File: C:/Users/vince/Desktop/cpen211/regfile.v Line: 8
+Info (10281): Verilog HDL Declaration information at regfile.v(8): object "R6" differs only in case from object "r6" in the same scope File: C:/Users/vince/Desktop/cpen211/regfile.v Line: 8
+Info (10281): Verilog HDL Declaration information at regfile.v(8): object "R7" differs only in case from object "r7" in the same scope File: C:/Users/vince/Desktop/cpen211/regfile.v Line: 8
+Warning (10268): Verilog HDL information at cpu.v(322): always construct contains both blocking and non-blocking assignments File: C:/Users/vince/Desktop/cpen211/cpu.v Line: 322
+Info (10281): Verilog HDL Declaration information at cpu.v(163): object "mask" differs only in case from object "MASK" in the same scope File: C:/Users/vince/Desktop/cpen211/cpu.v Line: 163
