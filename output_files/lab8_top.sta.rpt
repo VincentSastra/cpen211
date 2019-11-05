@@ -1,5 +1,5 @@
 Timing Analyzer report for lab8_top
-Mon Nov 04 19:53:53 2019
+Mon Nov 04 21:01:39 2019
 Quartus Prime Version 18.1.0 Build 625 09/12/2018 SJ Lite Edition
 
 
@@ -99,16 +99,16 @@ refer to the applicable agreement for further details.
 ; Number detected on machine ; 12          ;
 ; Maximum allowed            ; 6           ;
 ;                            ;             ;
-; Average used               ; 1.37        ;
+; Average used               ; 1.40        ;
 ; Maximum used               ; 6           ;
 ;                            ;             ;
 ; Usage by Processor         ; % Time Used ;
 ;     Processor 1            ; 100.0%      ;
-;     Processor 2            ;   7.9%      ;
-;     Processor 3            ;   7.8%      ;
-;     Processor 4            ;   7.5%      ;
-;     Processor 5            ;   6.9%      ;
-;     Processor 6            ;   6.9%      ;
+;     Processor 2            ;   8.5%      ;
+;     Processor 3            ;   8.3%      ;
+;     Processor 4            ;   8.1%      ;
+;     Processor 5            ;   7.4%      ;
+;     Processor 6            ;   7.4%      ;
 +----------------------------+-------------+
 
 
@@ -793,7 +793,7 @@ No non-DPA dedicated SERDES Receiver circuitry present in device or used in desi
 Info: *******************************************************************
 Info: Running Quartus Prime Timing Analyzer
     Info: Version 18.1.0 Build 625 09/12/2018 SJ Lite Edition
-    Info: Processing started: Mon Nov 04 19:53:45 2019
+    Info: Processing started: Mon Nov 04 21:01:28 2019
 Info: Command: quartus_sta lab8 -c lab8_top
 Info: qsta_default_script.tcl version: #1
 Warning (18236): Number of processors has not been specified which may cause overloading on shared machines.  Set the global assignment NUM_PARALLEL_PROCESSORS in your QSF to an appropriate value for best performance.
@@ -885,9 +885,9 @@ Info (332146): Worst-case minimum pulse width slack is -2.636
 Info (332102): Design is not fully constrained for setup requirements
 Info (332102): Design is not fully constrained for hold requirements
 Info: Quartus Prime Timing Analyzer was successful. 0 errors, 6 warnings
-    Info: Peak virtual memory: 5201 megabytes
-    Info: Processing ended: Mon Nov 04 19:53:53 2019
-    Info: Elapsed time: 00:00:08
-    Info: Total CPU time (on all processors): 00:00:09
+    Info: Peak virtual memory: 5205 megabytes
+    Info: Processing ended: Mon Nov 04 21:01:39 2019
+    Info: Elapsed time: 00:00:11
+    Info: Total CPU time (on all processors): 00:00:13
 
 
