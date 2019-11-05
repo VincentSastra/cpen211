@@ -15,6 +15,7 @@ module lab8_check_tb;
 
   initial begin
     err = 0;
+    KEY[3] = 1'b1;
     KEY[1] = 1'b0; // reset asserted
     // check if program from Figure 2 in Lab 8 handout can be found loaded in memory
     if (DUT.MEM.mem[0] !== 16'b1101000000001111) begin err = 1; $display("FAILED: mem[0] wrong; please set data.txt using lab8fig2.s"); $stop; end

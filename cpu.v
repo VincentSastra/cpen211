@@ -47,10 +47,10 @@ module cpu(clk, reset, read_data, mem_cmd, datapath_out, mem_addr, halt, interru
 	//output N, V, Z, w;
 	
 	wire [15:0] instr, sximm8, sximm5, reg_out; // instr = instruction that is being operated
-	wire load_ir, load_pc, reset_pc, addr_sel, branch_link, int_start, int_exit;
+	wire load_ir, load_pc, reset_pc, addr_sel, branch_link, int_start, int_exit, int_ls;
 
 	wire [8:0] PC, DataAddressOut, next_pc;
-	wire Z, N, V, branch_load;
+	wire Z, N, V, branch_load, mask;
 	
 	// Instructions for datapath	
 	wire [3:0] vsel;
@@ -61,12 +61,12 @@ module cpu(clk, reset, read_data, mem_cmd, datapath_out, mem_addr, halt, interru
 	vDFFE #(16) instruction(clk, load_ir, read_data, instr); //instruction register
 	
 	assign next_pc = reset_pc ? 9'b00000_0000 : 
-					(interrupt ? 9'b01101_1111 :
+					((int_start & ~mask) ? 9'b01101_1111 :
 					(branch_load ? (PC + sximm8) : 
-					(branch_link ? (reg_out[8:0]) : (PC + 1'b1)));
+					(branch_link ? (reg_out[8:0]) : (PC + 1'b1))));
 
 	vDFFE #(9) PCvDFF(clk, load_pc, next_pc, PC); //Program counter register	
-	vDFFE #(9) DataAddress(clk, load_addr, datapath_out[8:0], DataAddressOut); //data address register
+	vDFFE #(9) DataAddress(clk, load_addr, (int_ls ? datapath_out[8:0] + 9'b011100000 : datapath_out[8:0]), DataAddressOut); //data address register
 
 	assign mem_addr = addr_sel ? PC : DataAddressOut;	//simple mux
 	//OVERVIEW OF BEHAVIOR
@@ -104,7 +104,7 @@ module cpu(clk, reset, read_data, mem_cmd, datapath_out, mem_addr, halt, interru
 							load_ir, load_pc,
 							reset_pc, addr_sel, mem_cmd, load_addr,
 							branch_load, branch_link, halt,
-							int_start, int_exit; // addition for Lab8
+							int_start, int_exit, int_ls, mask); // addition for Lab8
 	//runs the finite state machine which will control the decoder and the datapath
 endmodule //cpu
 
@@ -153,20 +153,19 @@ module controllerFSM(clk, reset, opcode, op,
 							load_ir, load_pc,
 							reset_pc, addr_sel, mem_cmd, load_addr,
 							branch_load, branch_link, halt,
-							int_start, int_exit; // addition for Lab8
+							int_start, int_exit, int_ls, mask); // addition for Lab8
 	//runs the finite state machine which will control the decoder and the datapath
 
 	input clk, reset, Z, N, V, interrupt;
 	input [2:0] opcode, cond;
 	input [1:0] op;
-	output halt, int_start, int_exit;
+	output halt, int_start, int_exit, int_ls, mask;
 	output reg loada, loadb, loadc, write, asel, bsel, loads, reset_pc, addr_sel, load_ir, load_pc, load_addr, branch_load, branch_link;
 	output reg [1:0] mem_cmd;
 	output reg [2:0] nsel;
 	output reg [3:0] vsel;
 	
 	wire [19:0] p;
-	wire mask;
 
 	assign p [15:0] = {16{1'b0}};
 	assign p [19:17] = 3'b000;
@@ -175,9 +174,10 @@ module controllerFSM(clk, reset, opcode, op,
 	assign p [16] = (present_state === `IF1);
 	assign halt = (present_state == {`instruct9, `one});
 
-	assign int_exit = (present_state == {`intext, `one})
+	assign int_exit = (present_state == {`intex, `one});
 	assign int_start = (present_state == {`intgo, `one});
-	vDFFE #(1) mask(clk, (int_exit | int_start), int_start, mask);
+	assign int_ls = (present_state[7:4] == `intldr | `intstr);
+	vDFFE #(1) MASK(clk, (int_exit | int_start | (present_state === `Reset) ), int_start, mask);
 
 	always @(posedge clk) begin //always block that runs the meat of the FSM (changes states), sensitivty is at rising edge of the clk
 		if (reset) begin //check for reset
@@ -187,7 +187,7 @@ module controllerFSM(clk, reset, opcode, op,
 		case(present_state [7:4]) //the following case blocks check the steps within each instruction, as soon as one step is completed (clk is high) then the next step is ready to start. If a step is last for an instruction, it will connect back to waitState
 			4'b0000: case(present_state[3:0])
 							`one: present_state <= `IF1; // if Reset go to IF1
-							`two: present_state <= (interrupt ? {`intgo, `one} : `IF2); // if IF1 go to IF2
+							`two: present_state <= ((interrupt & ~mask) ? {`intgo, `one} : `IF2); // if IF1 go to IF2
 							`three: present_state <= `UpdatePC; // if IF2 go to UpdatePC
 							`four: begin
 								casex({opcode,op}) //case to move into the right instruction set
@@ -205,7 +205,7 @@ module controllerFSM(clk, reset, opcode, op,
 									5'b01010: present_state <= {`icall, `one}; // For indirect call
 									5'b01000: present_state <= {`icall, `two}; // Return back which is just icall step 2
 									5'b00000: present_state <= {`intstr, `one};
-									5'b01000: present_state <= {`intldr, `one};
+									5'b00001: present_state <= {`intldr, `one};
 									5'b00010: present_state <= {`intlop, `one};
 									5'b00011: present_state <= {`intex, `one};
 									default: present_state <= 8'bxxxx_xxxx;
@@ -290,7 +290,8 @@ module controllerFSM(clk, reset, opcode, op,
 			`intldr: case (present_state[3:0])
 								`one: present_state[3:0] <= `two;
 								`two: present_state[3:0] <= `three;
-								`three: present_state <= `IF1;
+								`three: present_state[3:0] <= `four;
+								`four: present_state <= `IF1;
 								default: present_state[3:0] <= 4'bxxxx;
 							endcase		
 
@@ -299,6 +300,15 @@ module controllerFSM(clk, reset, opcode, op,
 								default: present_state[3:0] <= 4'bxxxx;
 							endcase
 
+			`intgo: case (present_state[3:0])
+								`one: present_state <= `IF1;
+								default: present_state[3:0] <= 4'bxxxx;
+							endcase
+
+			`intex: case (present_state[3:0])
+								`one: present_state <= `IF1;
+								default: present_state[3:0] <= 4'bxxxx;
+							endcase
 													
 						
 			endcase //present_state instruction
@@ -840,7 +850,7 @@ module controllerFSM(clk, reset, opcode, op,
 								load_pc = 0;
 								branch_link = 0;
 
-								mem_cmd = `MWRITE;
+								mem_cmd = `MREAD;
 								addr_sel = 0;
 								load_ir = 0;
 								load_addr = 1'b0;
@@ -1174,7 +1184,7 @@ module controllerFSM(clk, reset, opcode, op,
 								load_ir = 0;
 								load_addr = 1'b0;
 				
-								nsel <= 3'b100;
+								nsel <= 3'b001;
 								write <= 1'b1;
 								loada <= 1'b0;
 								loads <= 1'b0;
@@ -1183,7 +1193,7 @@ module controllerFSM(clk, reset, opcode, op,
 								loadc <= 1'b0;
 								asel <= 1'b1;
 								bsel <= 1'b1;
-								vsel <= 4'b0000;
+								vsel <= 4'b1000;
 
 							end	
 
@@ -1212,7 +1222,7 @@ module controllerFSM(clk, reset, opcode, op,
 
 							end
 
-	{`intext, `one}: 	begin
+	{`intex, `one}: 	begin
 
 								reset_pc = 0;
 								load_pc = 1;

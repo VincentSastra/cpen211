@@ -1,4 +1,4 @@
-module lab8_stage2_tb;
+module lab8_bonus_tb;
   reg [3:0] KEY;
   reg [9:0] SW;
   wire [9:0] LEDR; 
@@ -15,7 +15,6 @@ module lab8_stage2_tb;
   wire break = (LEDR[8] == 1'b1);
   initial begin
     err = 0;
-    KEY[3] = 1'b1;
     KEY[1] = 1'b0; // reset asserted
     #10; // wait until next falling edge of clock
     KEY[1] = 1'b1; // reset de-asserted, PC still undefined if as in Figure 4
@@ -28,4 +27,20 @@ module lab8_stage2_tb;
     if (~err) $display("PASSED");
     $stop;
   end
+
+  initial begin
+
+    KEY[3] = 1'b1;
+
+    #400;
+
+    KEY[3] = 1'b0;
+    SW[7:0] = 8'b0101_1100;
+
+    #1000;
+
+    KEY[3] = 1'b1;
+
+  end
+
 endmodule

@@ -23,7 +23,7 @@ module lab8_top(KEY,SW,LEDR,HEX0,HEX1,HEX2,HEX3,HEX4,HEX5,CLOCK_50);
 	wire [15:0] read_data, write_data, dout;
 	wire [5:0] present_state;
 	
-   	cpu CPU(clk, reset, read_data, mem_cmd, write_data, mem_addr, halt); //initalizes the top level cpu module
+   	cpu CPU(clk, reset, read_data, mem_cmd, write_data, mem_addr, halt, ~KEY[3]); //initalizes the top level cpu module
 	
 		// Tri state driver to read   	
 	wire msel = (`MREAD == mem_cmd) & (mem_addr[8] == 1'b0);
