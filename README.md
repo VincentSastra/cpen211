@@ -1,5 +1,10 @@
-# IMPORTANT TODO
+# Finished Simple Risc Machine
 
-Finished PC implementation
+This is the verilog code of a simple risc machine.
 
-Fix all the states to consider the new PC implementation
+Features:
+  - 8 registers
+  - Turing complete instruction set
+  - 512 byte memory
+  - Support conditional branching
+  - Support interrupts
